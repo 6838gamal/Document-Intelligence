@@ -3,6 +3,9 @@ name: Replit Package Blocklist & Compatibility
 description: Known blocked packages and version incompatibilities in the Replit environment
 ---
 
+## PostgreSQL driver
+- Use `psycopg2-binary==2.9.10` for PostgreSQL connections via SQLAlchemy. Works fine on Replit.
+
 ## Blocked packages (HTTP 403 from package firewall)
 - `python-jose` — blocked entirely. Use `PyJWT` instead.
   - Replace `from jose import JWTError, jwt` with `import jwt` and catch `jwt.PyJWTError`
