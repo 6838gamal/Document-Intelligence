@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 {% block title %}{% if lang == 'ar' %}لوحة التحكم{% else %}Dashboard{% endif %} - DocIQ{% endblock %}
 {% block content %}
+
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
   <div>
     <h1 style="font-size:1.5rem;font-weight:800;color:var(--text);margin-bottom:0.25rem;">
-      {% if lang == 'ar' %}لوحة التحكم الرئيسية{% else %}Main Dashboard{% endif %}
+      {% if lang == 'ar' %}لوحة التحكم{% else %}Dashboard{% endif %}
     </h1>
-    <p style="color:var(--text-muted);font-size:0.875rem;">{% if lang == 'ar' %}مرحباً، {{ user.name }} — نظرة عامة على العمليات{% else %}Welcome, {{ user.name }} — Operations Overview{% endif %}</p>
+    <p style="color:var(--text-muted);font-size:0.875rem;">
+      {% if lang == 'ar' %}مرحباً، {{ user.name }} — نظرة عامة على العمليات{% else %}Welcome, {{ user.name }} — Operations Overview{% endif %}
+    </p>
   </div>
   <div style="display:flex;gap:0.75rem;">
     <a href="/documents/upload" class="btn-primary"><i class="fa fa-cloud-arrow-up"></i> {% if lang == 'ar' %}رفع مستند{% else %}Upload{% endif %}</a>
@@ -14,108 +17,81 @@
   </div>
 </div>
 
-<!-- KPI CARDS ROW -->
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
+<!-- KPI CARDS -->
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem;">
   <div class="kpi-card">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;">
       <div>
-        <p style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}إجمالي المستندات{% else %}Total Documents{% endif %}</p>
-        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);" data-stat="{{ total_docs }}">0</h2>
-        <span class="stat-up" style="font-size:0.8rem;font-weight:600;"><i class="fa fa-arrow-trend-up"></i> +12% {% if lang == 'ar' %}هذا الشهر{% else %}this month{% endif %}</span>
+        <p style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}إجمالي المستندات{% else %}Total Documents{% endif %}</p>
+        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);">{{ total_docs }}</h2>
       </div>
-      <div style="width:44px;height:44px;background:rgba(59,130,246,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-        <i class="fa fa-file-lines" style="color:#3B82F6;font-size:1.25rem;"></i>
+      <div style="width:44px;height:44px;background:rgba(59,130,246,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-file-lines" style="color:#3B82F6;font-size:1.2rem;"></i>
       </div>
     </div>
   </div>
   <div class="kpi-card">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;">
       <div>
-        <p style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}بانتظار الاعتماد{% else %}Pending Approvals{% endif %}</p>
-        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);" data-stat="{{ pending_approvals }}">0</h2>
-        <span class="stat-down" style="font-size:0.8rem;font-weight:600;"><i class="fa fa-circle-exclamation"></i> {% if lang == 'ar' %}يحتاج مراجعة{% else %}needs review{% endif %}</span>
+        <p style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}بانتظار الاعتماد{% else %}Pending Approvals{% endif %}</p>
+        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);">{{ pending_approvals }}</h2>
       </div>
-      <div style="width:44px;height:44px;background:rgba(245,158,11,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-        <i class="fa fa-clock" style="color:#F59E0B;font-size:1.25rem;"></i>
-      </div>
-    </div>
-  </div>
-  <div class="kpi-card">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
-      <div>
-        <p style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}معدل الأتمتة{% else %}Automation Rate{% endif %}</p>
-        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);">{{ automation_rate }}%</h2>
-        <span class="stat-up" style="font-size:0.8rem;font-weight:600;"><i class="fa fa-arrow-trend-up"></i> +3.2% {% if lang == 'ar' %}هذا الأسبوع{% else %}this week{% endif %}</span>
-      </div>
-      <div style="width:44px;height:44px;background:rgba(16,185,129,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-        <i class="fa fa-robot" style="color:#10B981;font-size:1.25rem;"></i>
+      <div style="width:44px;height:44px;background:rgba(245,158,11,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-clock" style="color:#F59E0B;font-size:1.2rem;"></i>
       </div>
     </div>
   </div>
   <div class="kpi-card">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;">
       <div>
-        <p style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}مسارات نشطة{% else %}Active Workflows{% endif %}</p>
-        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);" data-stat="{{ active_workflows }}">0</h2>
-        <span style="color:var(--text-muted);font-size:0.8rem;font-weight:600;"><i class="fa fa-diagram-project"></i> {% if lang == 'ar' %}مسار عمل مفعّل{% else %}running workflows{% endif %}</span>
+        <p style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}مستندات معتمدة{% else %}Approved Docs{% endif %}</p>
+        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);">{{ approved_docs }}</h2>
+        <span style="font-size:0.78rem;color:var(--success);font-weight:600;">{{ approval_rate }}% {% if lang == 'ar' %}معدل الاعتماد{% else %}approval rate{% endif %}</span>
       </div>
-      <div style="width:44px;height:44px;background:rgba(99,102,241,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-        <i class="fa fa-diagram-project" style="color:#6366F1;font-size:1.25rem;"></i>
+      <div style="width:44px;height:44px;background:rgba(16,185,129,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-circle-check" style="color:#10B981;font-size:1.2rem;"></i>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+      <div>
+        <p style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}مسارات نشطة{% else %}Active Workflows{% endif %}</p>
+        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);">{{ active_workflows }}</h2>
+      </div>
+      <div style="width:44px;height:44px;background:rgba(99,102,241,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-diagram-project" style="color:#6366F1;font-size:1.2rem;"></i>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+      <div>
+        <p style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}المستخدمون النشطون{% else %}Active Users{% endif %}</p>
+        <h2 style="font-size:1.875rem;font-weight:800;color:var(--text);">{{ total_users }}</h2>
+      </div>
+      <div style="width:44px;height:44px;background:rgba(139,92,246,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-users" style="color:#8B5CF6;font-size:1.2rem;"></i>
       </div>
     </div>
   </div>
 </div>
 
-<!-- CHARTS ROW -->
+<!-- CHART + PENDING -->
 <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1.5rem;">
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-      <h3 style="font-weight:700;font-size:1rem;">{% if lang == 'ar' %}معالجة المستندات - آخر 7 أيام{% else %}Document Processing — Last 7 Days{% endif %}</h3>
-      <span class="badge badge-success"><i class="fa fa-circle" style="font-size:0.6rem;margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.35rem;"></i> {% if lang == 'ar' %}مباشر{% else %}Live{% endif %}</span>
+      <h3 style="font-weight:700;font-size:1rem;">{% if lang == 'ar' %}المستندات المرفوعة — آخر 14 يوم{% else %}Documents Uploaded — Last 14 Days{% endif %}</h3>
+      <span class="badge badge-success"><i class="fa fa-circle" style="font-size:0.6rem;margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.35rem;"></i>{% if lang == 'ar' %}بيانات حقيقية{% else %}Live Data{% endif %}</span>
     </div>
-    <canvas id="processingChart" height="160"></canvas>
-  </div>
-  <div class="card">
-    <h3 style="font-weight:700;font-size:1rem;margin-bottom:1.25rem;">{% if lang == 'ar' %}توزيع المستندات{% else %}Document Distribution{% endif %}</h3>
-    <canvas id="donutChart" height="180"></canvas>
-    <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:1rem;">
-      {% set statuses = [('approved','معتمد','Approved','#10B981'),('pending_approval','انتظار','Pending','#F59E0B'),('reviewed','مراجع','Reviewed','#3B82F6'),('processing','معالجة','Processing','#6366F1')] %}
-      {% for stat, ar, en, color in statuses %}
-      <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;">
-        <div style="display:flex;align-items:center;gap:0.5rem;"><div style="width:8px;height:8px;border-radius:2px;background:{{ color }};"></div><span style="color:var(--text-muted);">{% if lang == 'ar' %}{{ ar }}{% else %}{{ en }}{% endif %}</span></div>
-        <span style="font-weight:700;">{{ loop.index * 2 + 1 }}</span>
-      </div>
-      {% endfor %}
+    {% if chart_labels %}
+    <canvas id="docsTimelineChart" height="150"></canvas>
+    {% else %}
+    <div style="display:flex;align-items:center;justify-content:center;height:150px;color:var(--text-muted);flex-direction:column;gap:0.5rem;">
+      <i class="fa fa-chart-line" style="font-size:2rem;opacity:0.3;"></i>
+      <p style="font-size:0.875rem;">{% if lang == 'ar' %}ابدأ برفع مستندات لرؤية الرسم البياني{% else %}Upload documents to see the chart{% endif %}</p>
     </div>
-  </div>
-</div>
-
-<!-- RECENT DOCS + PENDING APPROVALS -->
-<div style="display:grid;grid-template-columns:3fr 2fr;gap:1rem;">
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-      <h3 style="font-weight:700;font-size:1rem;">{% if lang == 'ar' %}المستندات الأخيرة{% else %}Recent Documents{% endif %}</h3>
-      <a href="/documents" style="color:var(--accent);font-size:0.875rem;font-weight:600;text-decoration:none;">{% if lang == 'ar' %}عرض الكل{% else %}View All{% endif %} <i class="fa fa-arrow-{% if dir == 'rtl' %}left{% else %}right{% endif %}"></i></a>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:0.75rem;">
-      {% for doc in recent_docs %}
-      <a href="/documents/{{ doc.id }}" style="display:flex;align-items:center;gap:0.875rem;padding:0.75rem;border-radius:10px;text-decoration:none;color:var(--text);border:1px solid var(--border);transition:0.15s;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-        <div style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,0.1);flex-shrink:0;">
-          <i class="fa fa-{% if doc.file_type == 'PDF' %}file-pdf{% elif doc.file_type == 'XLSX' %}file-excel{% else %}file-word{% endif %}" style="color:{% if doc.file_type == 'PDF' %}#EF4444{% elif doc.file_type == 'XLSX' %}#10B981{% else %}#3B82F6{% endif %};font-size:1.1rem;"></i>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ doc.title }}</div>
-          <div style="font-size:0.75rem;color:var(--text-muted);">{{ doc.category }} · {{ doc.file_type }}</div>
-        </div>
-        <div>
-          {% if doc.status == 'approved' %}<span class="badge badge-success">{% if lang == 'ar' %}معتمد{% else %}Approved{% endif %}</span>
-          {% elif doc.status == 'pending_approval' %}<span class="badge badge-warning">{% if lang == 'ar' %}انتظار{% else %}Pending{% endif %}</span>
-          {% elif doc.status == 'processing' %}<span class="badge badge-info">{% if lang == 'ar' %}معالجة{% else %}Processing{% endif %}</span>
-          {% else %}<span class="badge badge-gray">{{ doc.status }}</span>{% endif %}
-        </div>
-      </a>
-      {% endfor %}
-    </div>
+    {% endif %}
   </div>
 
   <div class="card">
@@ -128,88 +104,173 @@
       {% for approval in pending_list %}
       <div style="padding:0.875rem;border-radius:10px;border:1px solid var(--border);border-{% if dir == 'rtl' %}right{% else %}left{% endif %}:3px solid {% if approval.priority == 'high' %}var(--danger){% else %}var(--warning){% endif %};">
         <div style="font-weight:600;font-size:0.875rem;margin-bottom:0.25rem;">{{ approval.document.title[:40] }}{% if approval.document.title|length > 40 %}...{% endif %}</div>
-        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.75rem;">{{ approval.document.category }}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.75rem;">{{ approval.document.category or '—' }}</div>
         <div style="display:flex;gap:0.5rem;">
           <form method="POST" action="/approvals/{{ approval.id }}/approve" style="flex:1;">
-            <button class="btn-primary" style="width:100%;padding:0.4rem;justify-content:center;">{% if lang == 'ar' %}موافقة{% else %}Approve{% endif %}</button>
+            <button class="btn-primary" style="width:100%;padding:0.4rem;justify-content:center;font-size:0.8rem;">{% if lang == 'ar' %}موافقة{% else %}Approve{% endif %}</button>
           </form>
           <form method="POST" action="/approvals/{{ approval.id }}/reject" style="flex:1;">
-            <button type="submit" style="width:100%;padding:0.4rem;border-radius:8px;border:1px solid var(--danger);background:transparent;color:var(--danger);cursor:pointer;font-size:0.875rem;font-weight:600;">{% if lang == 'ar' %}رفض{% else %}Reject{% endif %}</button>
+            <button type="submit" style="width:100%;padding:0.4rem;border-radius:8px;border:1px solid var(--danger);background:transparent;color:var(--danger);cursor:pointer;font-size:0.8rem;font-weight:600;">{% if lang == 'ar' %}رفض{% else %}Reject{% endif %}</button>
           </form>
         </div>
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <div style="text-align:center;padding:2rem;color:var(--text-muted);">
-      <i class="fa fa-circle-check" style="font-size:2rem;margin-bottom:0.5rem;color:var(--success);"></i>
-      <p style="font-weight:600;">{% if lang == 'ar' %}لا توجد اعتمادات معلقة{% else %}No pending approvals{% endif %}</p>
+    <div style="text-align:center;padding:2.5rem 1rem;color:var(--text-muted);">
+      <i class="fa fa-circle-check" style="font-size:2rem;margin-bottom:0.5rem;color:var(--success);display:block;"></i>
+      <p style="font-weight:600;font-size:0.875rem;">{% if lang == 'ar' %}لا توجد اعتمادات معلقة{% else %}No pending approvals{% endif %}</p>
     </div>
     {% endif %}
   </div>
 </div>
 
-<!-- AI PROCESSING STATS -->
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem;">
-  <div class="card" style="text-align:center;">
-    <div style="font-size:1.75rem;font-weight:800;color:var(--accent);">{{ avg_processing_time }}s</div>
-    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">{% if lang == 'ar' %}متوسط وقت المعالجة{% else %}Avg Processing Time{% endif %}</div>
-    <div style="margin-top:0.75rem;" class="progress-bar"><div class="progress-fill" style="width:75%;"></div></div>
+<!-- USERS TABLE + RECENT DOCS -->
+<div style="display:grid;grid-template-columns:3fr 2fr;gap:1rem;margin-bottom:1.5rem;">
+
+  <!-- Users table -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:1.25rem 1.25rem 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h3 style="font-weight:700;font-size:1rem;">{% if lang == 'ar' %}المستخدمون{% else %}Users{% endif %}</h3>
+      <a href="/users" style="color:var(--accent);font-size:0.875rem;font-weight:600;text-decoration:none;">{% if lang == 'ar' %}إدارة{% else %}Manage{% endif %} <i class="fa fa-arrow-{% if dir == 'rtl' %}left{% else %}right{% endif %}"></i></a>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+      <thead>
+        <tr style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg);">
+          <th style="text-align:{% if dir == 'rtl' %}right{% else %}left{% endif %};padding:0.6rem 1.25rem;font-size:0.75rem;color:var(--text-muted);font-weight:600;">{% if lang == 'ar' %}المستخدم{% else %}User{% endif %}</th>
+          <th style="text-align:{% if dir == 'rtl' %}right{% else %}left{% endif %};padding:0.6rem;font-size:0.75rem;color:var(--text-muted);font-weight:600;">{% if lang == 'ar' %}الدور{% else %}Role{% endif %}</th>
+          <th style="text-align:{% if dir == 'rtl' %}right{% else %}left{% endif %};padding:0.6rem;font-size:0.75rem;color:var(--text-muted);font-weight:600;">{% if lang == 'ar' %}المستندات{% else %}Docs{% endif %}</th>
+          <th style="text-align:{% if dir == 'rtl' %}right{% else %}left{% endif %};padding:0.6rem 1.25rem;font-size:0.75rem;color:var(--text-muted);font-weight:600;">{% if lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users_with_stats %}
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:0.75rem 1.25rem;">
+            <div style="display:flex;align-items:center;gap:0.625rem;">
+              <div style="width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:white;flex-shrink:0;">{{ u.name[0] }}</div>
+              <div>
+                <div style="font-weight:600;color:var(--text);">{{ u.name }}</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">{{ u.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="padding:0.75rem 0.6rem;">
+            {% if u.role == 'super_admin' %}<span class="badge" style="background:rgba(139,92,246,0.12);color:#8B5CF6;">{% if lang == 'ar' %}مدير النظام{% else %}Super Admin{% endif %}</span>
+            {% elif u.role == 'admin' %}<span class="badge" style="background:rgba(59,130,246,0.12);color:#3B82F6;">{% if lang == 'ar' %}أدمين{% else %}Admin{% endif %}</span>
+            {% elif u.role == 'manager' %}<span class="badge" style="background:rgba(16,185,129,0.12);color:#10B981;">{% if lang == 'ar' %}مدير{% else %}Manager{% endif %}</span>
+            {% elif u.role == 'reviewer' %}<span class="badge" style="background:rgba(245,158,11,0.12);color:#F59E0B;">{% if lang == 'ar' %}مراجع{% else %}Reviewer{% endif %}</span>
+            {% else %}<span class="badge badge-gray">{% if lang == 'ar' %}مشاهد{% else %}Viewer{% endif %}</span>{% endif %}
+          </td>
+          <td style="padding:0.75rem 0.6rem;font-weight:700;color:var(--text);">{{ u.doc_count }}</td>
+          <td style="padding:0.75rem 1.25rem;">
+            {% if u.is_active %}<span class="badge badge-success">{% if lang == 'ar' %}نشط{% else %}Active{% endif %}</span>
+            {% else %}<span class="badge badge-gray">{% if lang == 'ar' %}معطل{% else %}Inactive{% endif %}</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">{% if lang == 'ar' %}لا يوجد مستخدمون بعد{% else %}No users yet{% endif %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-  <div class="card" style="text-align:center;">
-    <div style="font-size:1.75rem;font-weight:800;color:var(--success);">96.2%</div>
-    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">{% if lang == 'ar' %}دقة الاستخراج{% else %}Extraction Accuracy{% endif %}</div>
-    <div style="margin-top:0.75rem;" class="progress-bar"><div class="progress-fill" style="width:96%;background:var(--success);"></div></div>
-  </div>
-  <div class="card" style="text-align:center;">
-    <div style="font-size:1.75rem;font-weight:800;color:var(--warning);">98.7%</div>
-    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">{% if lang == 'ar' %}وقت التشغيل{% else %}System Uptime{% endif %}</div>
-    <div style="margin-top:0.75rem;" class="progress-bar"><div class="progress-fill" style="width:99%;background:var(--warning);"></div></div>
+
+  <!-- Recent docs -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h3 style="font-weight:700;font-size:1rem;">{% if lang == 'ar' %}المستندات الأخيرة{% else %}Recent Documents{% endif %}</h3>
+      <a href="/documents" style="color:var(--accent);font-size:0.875rem;font-weight:600;text-decoration:none;">{% if lang == 'ar' %}عرض الكل{% else %}View All{% endif %}</a>
+    </div>
+    {% if recent_docs %}
+    <div style="display:flex;flex-direction:column;gap:0.625rem;">
+      {% for doc in recent_docs %}
+      <a href="/documents/{{ doc.id }}" style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem;border-radius:8px;text-decoration:none;color:var(--text);border:1px solid var(--border);transition:0.15s;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+        <div style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,0.1);flex-shrink:0;">
+          <i class="fa fa-{% if doc.file_type == 'PDF' %}file-pdf{% elif doc.file_type == 'XLSX' %}file-excel{% else %}file-word{% endif %}" style="color:{% if doc.file_type == 'PDF' %}#EF4444{% elif doc.file_type == 'XLSX' %}#10B981{% else %}#3B82F6{% endif %};font-size:1rem;"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ doc.title }}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);">{{ doc.category or '—' }} · {{ doc.file_type }}</div>
+        </div>
+        {% if doc.status == 'approved' %}<span class="badge badge-success" style="font-size:0.7rem;">{% if lang == 'ar' %}معتمد{% else %}OK{% endif %}</span>
+        {% elif doc.status == 'pending_approval' %}<span class="badge badge-warning" style="font-size:0.7rem;">{% if lang == 'ar' %}انتظار{% else %}Wait{% endif %}</span>
+        {% elif doc.status == 'processing' %}<span class="badge badge-info" style="font-size:0.7rem;">{% if lang == 'ar' %}معالجة{% else %}Proc.{% endif %}</span>
+        {% else %}<span class="badge badge-gray" style="font-size:0.7rem;">{{ doc.status }}</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:2.5rem 1rem;color:var(--text-muted);">
+      <i class="fa fa-folder-open" style="font-size:2rem;margin-bottom:0.5rem;display:block;opacity:0.4;"></i>
+      <p style="font-size:0.875rem;">{% if lang == 'ar' %}لا توجد مستندات بعد{% else %}No documents yet{% endif %}</p>
+      <a href="/documents/upload" class="btn-primary" style="margin-top:0.75rem;display:inline-flex;">{% if lang == 'ar' %}رفع أول مستند{% else %}Upload First{% endif %}</a>
+    </div>
+    {% endif %}
   </div>
 </div>
+
+<!-- RECENT ACTIVITY -->
+{% if recent_activity %}
+<div class="card" style="padding:0;overflow:hidden;">
+  <div style="padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+    <h3 style="font-weight:700;font-size:1rem;">{% if lang == 'ar' %}سجل النشاط الأخير{% else %}Recent Activity{% endif %}</h3>
+    <a href="/audit" style="color:var(--accent);font-size:0.875rem;font-weight:600;text-decoration:none;">{% if lang == 'ar' %}السجل الكامل{% else %}Full Log{% endif %}</a>
+  </div>
+  <div style="border-top:1px solid var(--border);">
+    {% for log, user_name in recent_activity %}
+    <div style="display:flex;align-items:center;gap:0.875rem;padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);">
+      <div style="width:32px;height:32px;border-radius:8px;background:rgba(59,130,246,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        {% if 'UPLOAD' in log.action %}<i class="fa fa-upload" style="color:#3B82F6;font-size:0.8rem;"></i>
+        {% elif 'APPROVE' in log.action %}<i class="fa fa-check" style="color:#10B981;font-size:0.8rem;"></i>
+        {% elif 'LOGIN' in log.action %}<i class="fa fa-right-to-bracket" style="color:#8B5CF6;font-size:0.8rem;"></i>
+        {% elif 'DELETE' in log.action %}<i class="fa fa-trash" style="color:#EF4444;font-size:0.8rem;"></i>
+        {% else %}<i class="fa fa-bolt" style="color:#F59E0B;font-size:0.8rem;"></i>{% endif %}
+      </div>
+      <div style="flex:1;">
+        <span style="font-weight:600;font-size:0.825rem;color:var(--text);">{{ user_name }}</span>
+        <span style="color:var(--text-muted);font-size:0.825rem;"> — {{ log.action | replace('_',' ') | lower }}</span>
+        {% if log.resource_type %}<span class="badge badge-gray" style="font-size:0.7rem;margin-{% if dir == 'rtl' %}right{% else %}left{% endif %}:0.25rem;">{{ log.resource_type }}</span>{% endif %}
+      </div>
+      <span style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap;">
+        {% if log.created_at %}{{ log.created_at.strftime('%d/%m %H:%M') }}{% endif %}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}
 {% block scripts %}
 <script>
+{% if chart_labels %}
 const isDark = document.documentElement.classList.contains('dark');
 const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
 const textColor = isDark ? '#94A3B8' : '#64748B';
-Chart.defaults.font.family = "'Cairo', 'Inter', sans-serif";
+Chart.defaults.font.family = "'Cairo','Inter',sans-serif";
 
-new Chart(document.getElementById('processingChart'), {
-  type: 'line',
+new Chart(document.getElementById('docsTimelineChart'), {
+  type: 'bar',
   data: {
-    labels: ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'],
+    labels: {{ chart_labels | tojson }},
     datasets: [{
-      label: '{% if lang == "ar" %}مستندات معالجة{% else %}Processed{% endif %}',
-      data: [12, 19, 15, 25, 22, 30, 28],
-      borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.08)',
-      borderWidth: 2.5, fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 6
-    },{
-      label: '{% if lang == "ar" %}معتمدة{% else %}Approved{% endif %}',
-      data: [8, 14, 11, 20, 18, 25, 23],
-      borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.06)',
-      borderWidth: 2.5, fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 6
+      label: '{% if lang == "ar" %}مستندات{% else %}Documents{% endif %}',
+      data: {{ chart_data | tojson }},
+      backgroundColor: 'rgba(59,130,246,0.2)',
+      borderColor: '#3B82F6',
+      borderWidth: 2,
+      borderRadius: 6,
     }]
   },
   options: {
     responsive: true, maintainAspectRatio: true,
-    plugins: { legend: { position: 'top', labels: { color: textColor, boxWidth: 12, padding: 20 } } },
+    plugins: { legend: { display: false } },
     scales: {
       x: { grid: { color: gridColor }, ticks: { color: textColor } },
-      y: { grid: { color: gridColor }, ticks: { color: textColor } }
+      y: { grid: { color: gridColor }, ticks: { color: textColor, precision: 0 }, beginAtZero: true }
     }
   }
 });
-new Chart(document.getElementById('donutChart'), {
-  type: 'doughnut',
-  data: {
-    labels: ['{% if lang == "ar" %}معتمد{% else %}Approved{% endif %}','{% if lang == "ar" %}انتظار{% else %}Pending{% endif %}','{% if lang == "ar" %}مراجعة{% else %}Review{% endif %}','{% if lang == "ar" %}معالجة{% else %}Processing{% endif %}'],
-    datasets: [{ data: [5, 2, 2, 1], backgroundColor: ['#10B981','#F59E0B','#3B82F6','#6366F1'], borderWidth: 0, hoverOffset: 4 }]
-  },
-  options: {
-    responsive: true, cutout: '72%',
-    plugins: { legend: { display: false } }
-  }
-});
+{% endif %}
 </script>
 {% endblock %}

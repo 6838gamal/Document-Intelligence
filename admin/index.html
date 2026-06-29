@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocIQ — لوحة التحكم</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Cairo', sans-serif; background: #0f172a; color: #e2e8f0; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; }
+    .sidebar { background: #0f172a; border-left: 1px solid #1e293b; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .stat-card { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; }
+    .active-nav { background: #1e40af; color: white !important; }
+    .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+                background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  </style>
+</head>
+<body class="min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="sidebar w-64 min-h-screen fixed top-0 right-0 flex flex-col z-20">
+    <div class="p-6 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div>
+          <p class="font-bold text-white text-sm">DocIQ</p>
+          <p class="text-xs text-slate-500">لوحة التحكم</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1">
+      <a href="#dashboard" onclick="showSection('dashboard')"
+         class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm active-nav" data-section="dashboard">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+        الرئيسية
+      </a>
+      <a href="#users" onclick="showSection('users')"
+         class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm" data-section="users">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+        المستخدمون
+      </a>
+      <a href="#productivity" onclick="showSection('productivity')"
+         class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm" data-section="productivity">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        الإنتاجية
+      </a>
+      <a href="#activity" onclick="showSection('activity')"
+         class="nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm" data-section="activity">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        سجل النشاط
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-slate-800">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold" id="user-avatar">—</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-white truncate" id="sidebar-name">—</p>
+          <p class="text-xs text-slate-500" id="sidebar-role">—</p>
+        </div>
+      </div>
+      <button onclick="logout()"
+        class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-900/20 transition text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+        تسجيل الخروج
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="mr-64 flex-1 p-8 min-h-screen">
+
+    <!-- ── Dashboard Section ── -->
+    <section id="section-dashboard">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-white">نظرة عامة</h1>
+        <p class="text-slate-400 text-sm mt-1">إحصائيات المنصة في الوقت الفعلي</p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8" id="stats-grid">
+        <div class="skeleton h-24"></div>
+        <div class="skeleton h-24"></div>
+        <div class="skeleton h-24"></div>
+        <div class="skeleton h-24"></div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="card p-6">
+          <h3 class="font-semibold text-white mb-4 text-sm">المستندات المرفوعة (14 يوم)</h3>
+          <canvas id="docs-chart" height="160"></canvas>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-semibold text-white mb-4 text-sm">طلبات الاعتماد (14 يوم)</h3>
+          <canvas id="approvals-chart" height="160"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Users Section ── -->
+    <section id="section-users" class="hidden">
+      <div class="mb-8 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-white">المستخدمون</h1>
+          <p class="text-slate-400 text-sm mt-1">جميع الحسابات المسجلة في المنصة</p>
+        </div>
+        <button onclick="loadUsers()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          تحديث
+        </button>
+      </div>
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-700 text-slate-400 text-xs uppercase">
+                <th class="text-right px-5 py-3 font-medium">المستخدم</th>
+                <th class="text-right px-5 py-3 font-medium">الدور</th>
+                <th class="text-right px-5 py-3 font-medium">القسم</th>
+                <th class="text-right px-5 py-3 font-medium">المستندات</th>
+                <th class="text-right px-5 py-3 font-medium">آخر نشاط</th>
+                <th class="text-right px-5 py-3 font-medium">الحالة</th>
+                <th class="text-right px-5 py-3 font-medium">إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <tr><td colspan="7" class="text-center py-12 text-slate-500">جارٍ التحميل…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="users-footer" class="px-5 py-3 border-t border-slate-700 text-xs text-slate-500"></div>
+      </div>
+    </section>
+
+    <!-- ── Productivity Section ── -->
+    <section id="section-productivity" class="hidden">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-white">تفاصيل الإنتاجية</h1>
+        <p class="text-slate-400 text-sm mt-1">أداء الفريق وأنشطة المنصة</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+        <div class="card p-6">
+          <h3 class="font-semibold text-white mb-4 text-sm">المستندات يومياً (آخر 14 يوم)</h3>
+          <canvas id="prod-docs-chart" height="180"></canvas>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-semibold text-white mb-4 text-sm">طلبات الاعتماد يومياً</h3>
+          <canvas id="prod-approvals-chart" height="180"></canvas>
+        </div>
+      </div>
+
+      <div class="card p-6">
+        <h3 class="font-semibold text-white mb-4 text-sm">إنتاج المستخدمين (إجمالي المستندات)</h3>
+        <canvas id="prod-users-chart" height="100"></canvas>
+      </div>
+    </section>
+
+    <!-- ── Activity Section ── -->
+    <section id="section-activity" class="hidden">
+      <div class="mb-8 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-white">سجل النشاط</h1>
+          <p class="text-slate-400 text-sm mt-1">آخر الإجراءات المنفذة على المنصة</p>
+        </div>
+        <button onclick="loadActivity()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          تحديث
+        </button>
+      </div>
+      <div class="card overflow-hidden">
+        <div id="activity-list" class="divide-y divide-slate-700">
+          <div class="text-center py-12 text-slate-500">جارٍ التحميل…</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="config.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    requireAuth();
+
+    // User info in sidebar
+    const adminUser = JSON.parse(localStorage.getItem(CONFIG.USER_KEY) || "{}");
+    if (adminUser.name) {
+      document.getElementById("sidebar-name").textContent = adminUser.name;
+      document.getElementById("sidebar-role").textContent = roleBadge(adminUser.role).replace(/<[^>]*>/g, "");
+      document.getElementById("user-avatar").textContent = adminUser.name.charAt(0);
+    }
+
+    let charts = {};
+    function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+    // ── Navigation ──────────────────────────────────────────────
+    function showSection(name) {
+      document.querySelectorAll("[id^='section-']").forEach(s => s.classList.add("hidden"));
+      document.getElementById("section-" + name).classList.remove("hidden");
+      document.querySelectorAll(".nav-link").forEach(a => {
+        a.classList.toggle("active-nav", a.dataset.section === name);
+        a.classList.toggle("text-white", a.dataset.section === name);
+        a.classList.toggle("text-slate-400", a.dataset.section !== name);
+      });
+      if (name === "dashboard") loadDashboard();
+      if (name === "users") loadUsers();
+      if (name === "productivity") loadProductivity();
+      if (name === "activity") loadActivity();
+      return false;
+    }
+
+    // ── Dashboard ────────────────────────────────────────────────
+    async function loadDashboard() {
+      try {
+        const [stats, prod] = await Promise.all([
+          API.get("/api/v1/stats"),
+          API.get("/api/v1/productivity"),
+        ]);
+        renderStats(stats);
+        renderMiniCharts(prod);
+      } catch (e) { console.error(e); }
+    }
+
+    function renderStats(s) {
+      const cards = [
+        { label: "المستخدمون النشطون", value: s.total_users, icon: "👥", color: "blue" },
+        { label: "إجمالي المستندات", value: s.total_docs, icon: "📄", color: "emerald" },
+        { label: "الاعتمادات المعلقة", value: s.pending_approvals, icon: "⏳", color: "amber" },
+        { label: "مسارات العمل الفعالة", value: s.active_workflows, icon: "⚡", color: "purple" },
+      ];
+      const colors = {
+        blue: "text-blue-400", emerald: "text-emerald-400",
+        amber: "text-amber-400", purple: "text-purple-400"
+      };
+      document.getElementById("stats-grid").innerHTML = cards.map(c => `
+        <div class="stat-card rounded-xl p-5">
+          <div class="flex items-start justify-between mb-3">
+            <span class="text-2xl">${c.icon}</span>
+            <span class="text-3xl font-bold ${colors[c.color]}">${c.value.toLocaleString("ar")}</span>
+          </div>
+          <p class="text-slate-400 text-xs">${c.label}</p>
+        </div>
+      `).join("");
+    }
+
+    function chartDefaults(labels, data, color) {
+      return {
+        labels,
+        datasets: [{
+          data,
+          borderColor: color,
+          backgroundColor: color + "22",
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: color,
+        }]
+      };
+    }
+
+    function renderMiniCharts(prod) {
+      const docsLabels = prod.docs_timeline.map(d => d.day.slice(5));
+      const docsData = prod.docs_timeline.map(d => d.count);
+      const appLabels = prod.approvals_timeline.map(d => d.day.slice(5));
+      const appData = prod.approvals_timeline.map(d => d.count);
+
+      destroyChart("docs-chart");
+      destroyChart("approvals-chart");
+      const opts = { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#94a3b8", font: { size: 10 } }, grid: { color: "#1e293b" } }, y: { ticks: { color: "#94a3b8", font: { size: 10 } }, grid: { color: "#334155" }, beginAtZero: true } } };
+      charts["docs-chart"] = new Chart(document.getElementById("docs-chart"), { type: "line", data: chartDefaults(docsLabels, docsData, "#3b82f6"), options: opts });
+      charts["approvals-chart"] = new Chart(document.getElementById("approvals-chart"), { type: "line", data: chartDefaults(appLabels, appData, "#10b981"), options: opts });
+    }
+
+    // ── Users ────────────────────────────────────────────────────
+    async function loadUsers() {
+      document.getElementById("users-table-body").innerHTML =
+        '<tr><td colspan="7" class="text-center py-12 text-slate-500">جارٍ التحميل…</td></tr>';
+      try {
+        const data = await API.get("/api/v1/users");
+        const tbody = document.getElementById("users-table-body");
+        if (!data.users.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-slate-500">لا يوجد مستخدمون</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.users.map(u => `
+          <tr class="border-b border-slate-800 hover:bg-slate-800/40 transition">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center text-xs font-bold text-white">${u.name.charAt(0)}</div>
+                <div>
+                  <p class="font-medium text-white text-sm">${u.name}</p>
+                  <p class="text-slate-500 text-xs">${u.email}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-4">${roleBadge(u.role)}</td>
+            <td class="px-5 py-4 text-slate-300 text-xs">${u.department}</td>
+            <td class="px-5 py-4 text-slate-300 text-xs">${u.doc_count}</td>
+            <td class="px-5 py-4 text-slate-400 text-xs">${formatDate(u.last_active)}</td>
+            <td class="px-5 py-4">
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.is_active ? 'bg-emerald-900/50 text-emerald-400' : 'bg-red-900/50 text-red-400'}">
+                ${u.is_active ? 'نشط' : 'معطل'}
+              </span>
+            </td>
+            <td class="px-5 py-4">
+              <button onclick="toggleUser(${u.id}, this)"
+                class="px-3 py-1 rounded-lg text-xs border transition
+                  ${u.is_active ? 'border-red-700 text-red-400 hover:bg-red-900/30' : 'border-emerald-700 text-emerald-400 hover:bg-emerald-900/30'}">
+                ${u.is_active ? 'تعطيل' : 'تفعيل'}
+              </button>
+            </td>
+          </tr>
+        `).join("");
+        document.getElementById("users-footer").textContent = `إجمالي: ${data.total} مستخدم`;
+      } catch (e) {
+        document.getElementById("users-table-body").innerHTML =
+          `<tr><td colspan="7" class="text-center py-8 text-red-400">${e.message}</td></tr>`;
+      }
+    }
+
+    async function toggleUser(id, btn) {
+      btn.disabled = true;
+      try {
+        await API.patch(`/api/v1/users/${id}/toggle`);
+        await loadUsers();
+      } catch (e) {
+        alert(e.message);
+        btn.disabled = false;
+      }
+    }
+
+    // ── Productivity ─────────────────────────────────────────────
+    async function loadProductivity() {
+      try {
+        const prod = await API.get("/api/v1/productivity?days=14");
+        const opts = {
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "#94a3b8", font: { size: 10 } }, grid: { color: "#1e293b" } },
+            y: { ticks: { color: "#94a3b8", font: { size: 10 } }, grid: { color: "#334155" }, beginAtZero: true }
+          }
+        };
+        destroyChart("prod-docs-chart"); destroyChart("prod-approvals-chart"); destroyChart("prod-users-chart");
+        charts["prod-docs-chart"] = new Chart(document.getElementById("prod-docs-chart"), {
+          type: "bar",
+          data: { labels: prod.docs_timeline.map(d => d.day.slice(5)), datasets: [{ data: prod.docs_timeline.map(d => d.count), backgroundColor: "#3b82f633", borderColor: "#3b82f6", borderWidth: 2, borderRadius: 6 }] },
+          options: opts
+        });
+        charts["prod-approvals-chart"] = new Chart(document.getElementById("prod-approvals-chart"), {
+          type: "bar",
+          data: { labels: prod.approvals_timeline.map(d => d.day.slice(5)), datasets: [{ data: prod.approvals_timeline.map(d => d.count), backgroundColor: "#10b98133", borderColor: "#10b981", borderWidth: 2, borderRadius: 6 }] },
+          options: opts
+        });
+        if (prod.docs_per_user.length) {
+          charts["prod-users-chart"] = new Chart(document.getElementById("prod-users-chart"), {
+            type: "bar",
+            data: {
+              labels: prod.docs_per_user.map(u => u.name),
+              datasets: [{ data: prod.docs_per_user.map(u => u.count), backgroundColor: "#8b5cf633", borderColor: "#8b5cf6", borderWidth: 2, borderRadius: 6 }]
+            },
+            options: { ...opts, indexAxis: "y" }
+          });
+        } else {
+          document.getElementById("prod-users-chart").parentElement.innerHTML +=
+            '<p class="text-slate-500 text-sm text-center py-4">لا توجد بيانات كافية بعد</p>';
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // ── Activity ─────────────────────────────────────────────────
+    async function loadActivity() {
+      document.getElementById("activity-list").innerHTML =
+        '<div class="text-center py-12 text-slate-500">جارٍ التحميل…</div>';
+      try {
+        const data = await API.get("/api/v1/activity?limit=30");
+        if (!data.activity.length) {
+          document.getElementById("activity-list").innerHTML =
+            '<div class="text-center py-12 text-slate-500">لا يوجد نشاط بعد</div>';
+          return;
+        }
+        const actionMap = {
+          LOGIN: ["🔑", "تسجيل دخول"],
+          LOGOUT: ["🚪", "تسجيل خروج"],
+          UPLOAD_DOCUMENT: ["📤", "رفع مستند"],
+          APPROVE_DOCUMENT: ["✅", "اعتماد مستند"],
+          REJECT_DOCUMENT: ["❌", "رفض مستند"],
+          CREATE_WORKFLOW: ["⚡", "إنشاء مسار"],
+          UPDATE_USER: ["✏️", "تعديل مستخدم"],
+          VIEW_DOCUMENT: ["👁️", "عرض مستند"],
+        };
+        document.getElementById("activity-list").innerHTML = data.activity.map(a => {
+          const [icon, label] = actionMap[a.action] || ["📋", a.action];
+          return `
+            <div class="flex items-center gap-4 px-5 py-3 hover:bg-slate-800/40 transition">
+              <span class="text-lg">${icon}</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-white font-medium">${label}</p>
+                <p class="text-xs text-slate-500">${a.user_name} · ${a.resource_type || '—'} · ${a.ip_address || '—'}</p>
+              </div>
+              <span class="text-xs text-slate-500 whitespace-nowrap">${formatDateTime(a.created_at)}</span>
+            </div>
+          `;
+        }).join("");
+      } catch (e) {
+        document.getElementById("activity-list").innerHTML =
+          `<div class="text-center py-8 text-red-400">${e.message}</div>`;
+      }
+    }
+
+    // Boot
+    loadDashboard();
+  </script>
+</body>
+</html>

@@ -23,6 +23,7 @@ from app.modules.customers.router import router as customers_router
 from app.modules.notifications.router import router as notifications_router
 from app.modules.integrations.router import router as integrations_router
 from app.modules.settings.router import router as settings_router
+from app.modules.admin_api.router import router as admin_api_router
 
 
 @asynccontextmanager
@@ -38,9 +39,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Document Intelligence Platform", version="1.0.0", lifespan=lifespan)
 
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/admin", StaticFiles(directory="admin", html=True), name="admin")
+
+app.include_router(admin_api_router)
 app.include_router(auth_router)
 app.include_router(dashboard_router)
 app.include_router(documents_router)

@@ -5,11 +5,18 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.core.database import get_db
 from app.core.dependencies import require_auth, get_theme_lang
-from app.core.models import Document, DocumentStatus, Approval, ApprovalStatus
+from app.core.models import Document, DocumentStatus, Approval, ApprovalStatus, AuditLog
 from typing import Optional
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 templates = Jinja2Templates(directory="templates")
+
+ALLOWED_TYPES = {"application/pdf", "application/msword",
+                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                 "application/vnd.ms-excel",
+                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                 "text/plain"}
+MAX_SIZE_MB = 20
 
 
 @router.get("", response_class=HTMLResponse)
@@ -52,15 +59,80 @@ async def upload_document(
     request: Request,
     title: str = Form(...),
     category: str = Form(...),
+    file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     user=Depends(require_auth)
 ):
-    doc = Document(title=title, category=category, file_name=f"{title}.pdf",
-                   file_type="PDF", status=DocumentStatus.PROCESSING,
-                   confidence_score=0.0, uploader_id=user.id, page_count=1)
+    file_name = "بدون ملف"
+    file_type = "UNKNOWN"
+    file_size = 0
+
+    if file and file.filename:
+        # Read metadata only — do NOT save to disk
+        content = await file.read()
+        file_size = len(content)
+
+        if file_size > MAX_SIZE_MB * 1024 * 1024:
+            tl = get_theme_lang(request)
+            return templates.TemplateResponse("documents/upload.html", {
+                "request": request, "user": user,
+                "error": f"حجم الملف يتجاوز الحد المسموح ({MAX_SIZE_MB} MB)", **tl
+            }, status_code=400)
+
+        ext = file.filename.rsplit(".", 1)[-1].upper() if "." in file.filename else "UNKNOWN"
+        file_name = file.filename
+        file_type = ext
+        # Content is processed in memory and not written to disk
+
+    doc = Document(
+        title=title,
+        category=category,
+        file_name=file_name,
+        file_type=file_type,
+        file_size=file_size,
+        file_path=None,          # no disk path
+        status=DocumentStatus.PROCESSING,
+        confidence_score=0.0,
+        uploader_id=user.id,
+        page_count=1,
+    )
     db.add(doc)
+    db.flush()
+
+    # Audit log
+    log = AuditLog(
+        user_id=user.id,
+        action="UPLOAD_DOCUMENT",
+        resource_type="document",
+        resource_id=str(doc.id),
+        after_data={"title": title, "category": category, "file_name": file_name},
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
+    db.add(log)
     db.commit()
+
     return RedirectResponse(url=f"/documents/{doc.id}", status_code=302)
+
+
+@router.post("/{doc_id}/delete")
+async def delete_document(
+    request: Request,
+    doc_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(require_auth)
+):
+    doc = db.query(Document).filter(Document.id == doc_id).first()
+    if doc:
+        doc.is_deleted = True
+        log = AuditLog(
+            user_id=user.id, action="DELETE_DOCUMENT",
+            resource_type="document", resource_id=str(doc_id),
+            ip_address=request.client.host if request.client else None,
+        )
+        db.add(log)
+        db.commit()
+    return RedirectResponse(url="/documents", status_code=302)
 
 
 @router.get("/{doc_id}", response_class=HTMLResponse)
