@@ -1,0 +1,685 @@
+أنت Principal Product Designer و Senior UX Architect و Enterprise SaaS Solution Architect و Design System Expert و AI Product Specialist.
+
+مهمتك تصميم منتج SaaS مؤسسي احترافي وقابل للتنفيذ والإطلاق التجاري الفعلي (Production Ready) وليس مجرد نموذج أولي أو أفكار عامة.
+
+اسم المنتج:
+
+Document Intelligence & Workflow Automation Platform
+
+منصة مؤسسية تعتمد على الذكاء الاصطناعي لإدارة المستندات واستخراج البيانات والأرشفة الذكية وإدارة الموافقات وسير العمل والبحث المعرفي الذكي (RAG) والتحليلات التشغيلية.
+
+━━━━━━━━━━━━━━━━━━━━
+🎯 الهدف من المهمة
+━━━━━━━━━━━━━━━━━━━━
+
+أريد إنشاء وثيقة تصميم شاملة ومتكاملة يمكن تسليمها مباشرة إلى:
+
+* Product Team
+* UI/UX Team
+* Frontend Team
+* Backend Team
+* AI Team
+
+بحيث يستطيع الفريق البدء بالتطوير مباشرة.
+
+لا أريد أفكاراً عامة.
+
+لا أريد خيارات متعددة.
+
+لا أريد اقتراحات مفتوحة.
+
+اتخذ القرارات التصميمية بنفسك وكأنك مسؤول المنتج الرئيسي (Chief Product Officer).
+
+━━━━━━━━━━━━━━━━━━━━
+📌 المستهدف
+━━━━━━━━━━━━━━━━━━━━
+
+صمم المنتج ليستهدف:
+
+* شركات المقاولات
+* شركات الخدمات المهنية
+* شركات اللوجستيات
+* الشركات المالية
+* شركات إدارة المشاريع
+* المؤسسات المتوسطة والكبيرة
+
+━━━━━━━━━━━━━━━━━━━━
+📌 المبدأ الأساسي
+━━━━━━━━━━━━━━━━━━━━
+
+يجب أن يشعر المستخدم أن المنصة:
+
+* ذكية
+* احترافية
+* سريعة
+* موثوقة
+* مؤسسية
+* سهلة الاستخدام
+
+وليست مجرد نظام أرشفة أو OCR.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 1
+PRODUCT DEFINITION
+━━━━━━━━━━━━━━━━━━━━
+
+أنشئ:
+
+1. Product Vision
+2. Value Proposition
+3. Core Benefits
+4. Target Personas
+5. Business Problems Solved
+6. Competitive Advantages
+7. Product Positioning
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 2
+INFORMATION ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━
+
+حدد جميع الشاشات المطلوبة.
+
+يجب أن تشمل على الأقل:
+
+1. Login
+2. Dashboard
+3. Documents
+4. Upload Documents
+5. Document Details
+6. Review & Validation
+7. Approvals
+8. Smart Search
+9. Reports
+10. Notifications
+11. Projects
+12. Vendors
+13. Customers
+14. Workflow Builder
+15. Knowledge Base
+16. Audit Trail
+17. User Management
+18. Roles & Permissions
+19. Integrations
+20. AI Agents
+21. Settings
+
+حدد:
+
+* Parent Pages
+* Child Pages
+* Navigation Tree
+* Breadcrumb Structure
+* User Journey
+* Page Hierarchy
+
+ارسم Navigation Tree كاملة.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 3
+DESIGN SYSTEM
+━━━━━━━━━━━━━━━━━━━━
+
+قم ببناء Design System كاملة.
+
+حدد:
+
+Typography
+Spacing
+Radius
+Elevation
+Shadows
+Icons
+Grid System
+Animations
+
+حدد:
+
+Font Family Arabic
+Font Family English
+
+حدد:
+
+H1
+H2
+H3
+H4
+H5
+H6
+Body
+Caption
+Labels
+
+مع الأحجام الدقيقة.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 4
+COLOR SYSTEM
+━━━━━━━━━━━━━━━━━━━━
+
+صمم نظام ألوان مؤسسي Premium.
+
+حدد أكواد HEX بدقة.
+
+يشمل:
+
+Primary
+Secondary
+Accent
+Success
+Warning
+Danger
+Info
+Neutral
+
+حدد:
+
+Background
+Surface
+Card
+Border
+Text
+
+━━━━━━━━━━━━━━━━━━━━
+🌞 LIGHT MODE
+━━━━━━━━━━━━━━━━━━━━
+
+حدد جميع الألوان.
+
+━━━━━━━━━━━━━━━━━━━━
+🌙 DARK MODE
+━━━━━━━━━━━━━━━━━━━━
+
+حدد جميع الألوان.
+
+اشرح أسباب اختيار كل لون.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 5
+RESPONSIVE SYSTEM
+━━━━━━━━━━━━━━━━━━━━
+
+يجب اعتماد Mobile First Architecture.
+
+صمم الواجهات للأحجام التالية:
+
+Small Mobile
+320px
+
+Mobile
+360px
+
+Large Mobile
+390px
+
+Tablet
+768px
+
+Laptop
+1280px
+
+Desktop
+1440px
+
+Large Desktop
+1920px
+
+لكل شاشة حدد:
+
+* Layout
+* Grid
+* Columns
+* Responsive Behavior
+
+اشرح بالتفصيل:
+
+* ما الذي يختفي
+* ما الذي يتغير
+* ما الذي يتحول إلى Drawer
+* ما الذي يتحول إلى Bottom Sheet
+* ما الذي يتحول إلى Card Layout
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 6
+MULTI-LANGUAGE SUPPORT
+━━━━━━━━━━━━━━━━━━━━
+
+يجب دعم:
+
+Arabic RTL
+English LTR
+
+حدد:
+
+* RTL Rules
+* LTR Rules
+* Mirroring Rules
+* Table Behavior
+* Sidebar Behavior
+* Icon Behavior
+* Breadcrumb Behavior
+* Form Behavior
+
+اشرح كيفية انعكاس كل شاشة ومكون.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 7
+NAVIGATION SYSTEM
+━━━━━━━━━━━━━━━━━━━━
+
+حدد:
+
+Desktop Navigation
+Tablet Navigation
+Mobile Navigation
+
+Desktop:
+
+Permanent Sidebar
+
+Tablet:
+
+Collapsible Sidebar
+
+Mobile:
+
+Bottom Navigation + Drawer
+
+حدد بدقة:
+
+* عناصر Bottom Navigation
+* عناصر Drawer
+* ترتيب العناصر
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 8
+SCREEN SPECIFICATIONS
+━━━━━━━━━━━━━━━━━━━━
+
+لكل شاشة دون استثناء:
+
+حدد:
+
+1. Screen Name
+2. Purpose
+3. Target User
+4. Layout Structure
+5. Component Hierarchy
+6. User Actions
+7. Buttons
+8. Filters
+9. Tables
+10. Cards
+11. Charts
+12. Drawers
+13. Modals
+
+اشرح ترتيب العناصر من الأعلى للأسفل.
+
+━━━━━━━━━━━━━━━━━━━━
+مثال مطلوب
+━━━━━━━━━━━━━━━━━━━━
+
+Dashboard
+
+Header
+Sidebar
+Main Content
+
+Row 1
+KPI Cards
+
+Row 2
+Charts
+
+Row 3
+Recent Documents
+
+Row 4
+Activity Feed
+
+حدد الأحجام والمسافات وعدد الأعمدة.
+
+طبق نفس المستوى من التفاصيل على جميع الشاشات.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 9
+DOCUMENT MANAGEMENT MODULE
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Upload Flow
+
+Document Classification
+
+Metadata Extraction
+
+Document Routing
+
+Document Storage
+
+Versioning
+
+Document Linking
+
+Document Timeline
+
+Document History
+
+Document Relationships
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 10
+AI REVIEW MODULE
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Original Document Viewer
+
+Extracted Fields Panel
+
+Confidence Scores
+
+Validation Actions
+
+Correction Workflow
+
+Human Review Workflow
+
+حدد موضع كل عنصر بدقة.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 11
+WORKFLOW BUILDER
+━━━━━━━━━━━━━━━━━━━━
+
+صمم Workflow Builder احترافي.
+
+يتضمن:
+
+Drag & Drop Canvas
+
+Nodes
+
+Conditions
+
+Approvals
+
+Notifications
+
+Escalations
+
+SLA Rules
+
+Visual Connections
+
+حدد جميع المكونات.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 12
+SMART SEARCH & RAG
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+AI Search Interface
+
+Semantic Search
+
+Hybrid Search
+
+Search Filters
+
+Search Results
+
+Source Citations
+
+Knowledge Collections
+
+Knowledge Permissions
+
+حدد Layout كامل.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 13
+AI AGENTS CENTER
+━━━━━━━━━━━━━━━━━━━━
+
+صمم مركز إدارة الوكلاء.
+
+يشمل:
+
+Document Agent
+
+Approval Agent
+
+Search Agent
+
+Compliance Agent
+
+Analytics Agent
+
+حدد:
+
+Status
+Logs
+Metrics
+Configuration
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 14
+REPORTS & ANALYTICS
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Operational KPIs
+
+Automation Rate
+
+Processing Time
+
+Approval Delays
+
+Department Performance
+
+Project Performance
+
+Bottleneck Analysis
+
+حدد الرسوم البيانية المناسبة لكل حالة.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 15
+USER MANAGEMENT
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Organizations
+
+Departments
+
+Users
+
+Roles
+
+Permissions
+
+Access Policies
+
+Audit Logs
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 16
+AUDIT TRAIL
+━━━━━━━━━━━━━━━━━━━━
+
+صمم شاشة تدقيق مؤسسية.
+
+اعرض:
+
+Who
+What
+When
+Where
+Before
+After
+
+مع فلاتر متقدمة.
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 17
+ACCESSIBILITY
+━━━━━━━━━━━━━━━━━━━━
+
+التزم بمعايير:
+
+WCAG AA
+
+حدد:
+
+Contrast Ratios
+
+Keyboard Navigation
+
+Focus States
+
+Screen Reader Support
+
+Error Messaging
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 18
+COMPONENT LIBRARY
+━━━━━━━━━━━━━━━━━━━━
+
+أنشئ مكتبة مكونات كاملة.
+
+Buttons
+
+Inputs
+
+Selects
+
+Dropdowns
+
+Tables
+
+Cards
+
+Badges
+
+Tags
+
+Tabs
+
+Accordions
+
+Drawers
+
+Modals
+
+Charts
+
+File Uploaders
+
+Date Pickers
+
+Search Components
+
+لكل مكون حدد:
+
+Default
+Hover
+Focus
+Active
+Disabled
+Error
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 19
+DESIGN TOKENS
+━━━━━━━━━━━━━━━━━━━━
+
+أنشئ Design Tokens كاملة.
+
+Colors
+
+Typography
+
+Spacing
+
+Radius
+
+Borders
+
+Elevation
+
+Animation
+
+Breakpoints
+
+Light Mode
+
+Dark Mode
+
+RTL
+
+LTR
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 20
+EMPTY / LOADING / ERROR STATES
+━━━━━━━━━━━━━━━━━━━━
+
+لكل شاشة حدد:
+
+Empty State
+
+Loading State
+
+Error State
+
+Success State
+
+First-Time User State
+
+━━━━━━━━━━━━━━━━━━━━
+المرحلة 21
+OUTPUT FORMAT
+━━━━━━━━━━━━━━━━━━━━
+
+أخرج النتيجة بالترتيب التالي:
+
+1. Product Vision
+2. Product Positioning
+3. Navigation Tree
+4. Information Architecture
+5. Design System
+6. Color System
+7. Responsive Rules
+8. RTL/LTR Rules
+9. Screen Specifications
+10. Component Library
+11. Workflow Builder Design
+12. AI Review Design
+13. Smart Search Design
+14. AI Agents Design
+15. Analytics Design
+16. User Management Design
+17. Accessibility Rules
+18. Design Tokens
+19. Empty States
+20. Loading States
+21. Error States
+
+ممنوع الإجابات المختصرة.
+
+ممنوع العموميات.
+
+ممنوع إعطاء خيارات متعددة.
+
+اتخذ قراراً تصميمياً واحداً نهائياً وكأن المشروع سيدخل مرحلة التصميم والتنفيذ الفعلي غداً.
