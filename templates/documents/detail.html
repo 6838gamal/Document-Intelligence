@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.title }} - DocIQ{% endblock %}
+{% block content %}
+<div style="margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:var(--text-muted);">
+  <a href="/documents" style="color:var(--accent);text-decoration:none;">{% if lang == 'ar' %}المستندات{% else %}Documents{% endif %}</a>
+  <i class="fa fa-chevron-{% if dir == 'rtl' %}left{% else %}right{% endif %}" style="font-size:0.7rem;"></i>
+  <span>{{ doc.title[:50] }}</span>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;">
+  <!-- LEFT: PREVIEW + TIMELINE -->
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div>
+          <h1 style="font-size:1.125rem;font-weight:800;">{{ doc.title }}</h1>
+          <p style="color:var(--text-muted);font-size:0.875rem;">{{ doc.file_type }} · {{ doc.category }} · {{ doc.page_count }} {% if lang == 'ar' %}صفحة{% else %}pages{% endif %}</p>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <a href="/documents/{{ doc.id }}/review" class="btn-primary"><i class="fa fa-robot"></i> {% if lang == 'ar' %}مراجعة AI{% else %}AI Review{% endif %}</a>
+          <button class="btn-secondary"><i class="fa fa-download"></i></button>
+          <button class="btn-secondary"><i class="fa fa-share-nodes"></i></button>
+        </div>
+      </div>
+      <!-- Document Preview Placeholder -->
+      <div style="background:var(--bg);border-radius:10px;height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--border);">
+        <i class="fa fa-file-pdf" style="font-size:4rem;color:#EF4444;margin-bottom:1rem;opacity:0.5;"></i>
+        <h3 style="font-weight:700;color:var(--text-muted);">{{ doc.file_name }}</h3>
+        <p style="color:var(--text-muted);font-size:0.875rem;">{{ (doc.file_size / 1024)|round(1) }} KB</p>
+        <button class="btn-primary" style="margin-top:1rem;"><i class="fa fa-eye"></i> {% if lang == 'ar' %}فتح في العارض{% else %}Open in Viewer{% endif %}</button>
+      </div>
+    </div>
+
+    <!-- EXTRACTED DATA -->
+    {% if doc.extracted_data %}
+    <div class="card">
+      <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang == 'ar' %}البيانات المستخرجة{% else %}Extracted Data{% endif %}
+        {% if doc.confidence_score > 0 %}<span class="badge badge-success" style="font-size:0.75rem;margin-{% if dir == 'rtl' %}right{% else %}left{% endif %}:0.5rem;">{{ doc.confidence_score }}% {% if lang == 'ar' %}ثقة{% else %}confidence{% endif %}</span>{% endif %}
+      </h3>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;">
+        {% for k, v in doc.extracted_data.items() %}
+        <div style="padding:0.875rem;background:var(--bg);border-radius:8px;border:1px solid var(--border);">
+          <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-bottom:0.25rem;">{{ k }}</div>
+          <div style="font-weight:700;font-size:0.9rem;">{{ v }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RIGHT: METADATA + APPROVALS + TIMELINE -->
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div class="card">
+      <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang == 'ar' %}تفاصيل المستند{% else %}Document Details{% endif %}</h3>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        {% for label_ar, label_en, value in [('الحالة','Status', doc.status),('الفئة','Category', doc.category or '—'),('النوع','Type', doc.file_type),('الحجم','Size', ((doc.file_size or 0) / 1024)|round(1)|string + ' KB'),('الصفحات','Pages', doc.page_count|string),('الرافع','Uploaded By', doc.uploader.name if doc.uploader else '—'),('تاريخ الرفع','Upload Date', doc.created_at.strftime('%Y/%m/%d') if doc.created_at else '—')] %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:0.6rem;border-bottom:1px solid var(--border);">
+          <span style="font-size:0.8rem;color:var(--text-muted);">{% if lang == 'ar' %}{{ label_ar }}{% else %}{{ label_en }}{% endif %}</span>
+          <span style="font-size:0.875rem;font-weight:600;">
+            {% if label_ar == 'الحالة' %}
+              {% if value == 'approved' %}<span class="badge badge-success">{% if lang == 'ar' %}معتمد{% else %}Approved{% endif %}</span>
+              {% elif value == 'pending_approval' %}<span class="badge badge-warning">{% if lang == 'ar' %}انتظار{% else %}Pending{% endif %}</span>
+              {% elif value == 'rejected' %}<span class="badge badge-danger">{% if lang == 'ar' %}مرفوض{% else %}Rejected{% endif %}</span>
+              {% else %}<span class="badge badge-gray">{{ value }}</span>{% endif %}
+            {% else %}{{ value }}{% endif %}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if approvals %}
+    <div class="card">
+      <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang == 'ar' %}سجل الاعتمادات{% else %}Approval History{% endif %}</h3>
+      {% for ap in approvals %}
+      <div style="padding:0.75rem;border-radius:8px;background:var(--bg);border:1px solid var(--border);margin-bottom:0.5rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem;">
+          <span style="font-weight:600;font-size:0.875rem;">{{ ap.approver.name if ap.approver else '—' }}</span>
+          {% if ap.status == 'approved' %}<span class="badge badge-success">{% if lang == 'ar' %}موافق{% else %}Approved{% endif %}</span>
+          {% elif ap.status == 'rejected' %}<span class="badge badge-danger">{% if lang == 'ar' %}مرفوض{% else %}Rejected{% endif %}</span>
+          {% else %}<span class="badge badge-warning">{% if lang == 'ar' %}انتظار{% else %}Pending{% endif %}</span>{% endif %}
+        </div>
+        {% if ap.notes %}<p style="font-size:0.8rem;color:var(--text-muted);">{{ ap.notes }}</p>{% endif %}
+        {% if ap.completed_at %}<p style="font-size:0.75rem;color:var(--text-muted);">{{ ap.completed_at.strftime('%Y/%m/%d %H:%M') }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</h3>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <a href="/documents/{{ doc.id }}/review" class="btn-primary" style="justify-content:center;"><i class="fa fa-robot"></i> {% if lang == 'ar' %}مراجعة بالذكاء الاصطناعي{% else %}AI Review{% endif %}</a>
+        <button class="btn-secondary" style="justify-content:center;"><i class="fa fa-share-nodes"></i> {% if lang == 'ar' %}إرسال للاعتماد{% else %}Send for Approval{% endif %}</button>
+        <button class="btn-secondary" style="justify-content:center;"><i class="fa fa-download"></i> {% if lang == 'ar' %}تنزيل{% else %}Download{% endif %}</button>
+        <button class="btn-secondary" style="justify-content:center;color:var(--danger);border-color:var(--danger);"><i class="fa fa-trash"></i> {% if lang == 'ar' %}حذف{% else %}Delete{% endif %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

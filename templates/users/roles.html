@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}الأدوار والصلاحيات{% else %}Roles & Permissions{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}الأدوار والصلاحيات{% else %}Roles & Permissions{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{% if lang == 'ar' %}إدارة صلاحيات الوصول بدقة{% else %}Fine-grained access control{% endif %}</p>
+  </div>
+  <button class="btn-primary"><i class="fa fa-plus"></i> {% if lang == 'ar' %}دور جديد{% else %}New Role{% endif %}</button>
+</div>
+
+{% set roles = [
+  ('super_admin','مدير النظام الأعلى','Super Admin','danger','#EF4444',1),
+  ('admin','مدير النظام','Admin','danger','#F97316',2),
+  ('manager','مدير','Manager','info','#3B82F6',5),
+  ('reviewer','مراجع','Reviewer','warning','#F59E0B',8),
+  ('viewer','مستعرض','Viewer','gray','#94A3B8',12)
+] %}
+{% set permissions = [
+  ('documents.view','عرض المستندات','View Documents'),
+  ('documents.upload','رفع المستندات','Upload Documents'),
+  ('documents.delete','حذف المستندات','Delete Documents'),
+  ('approvals.view','عرض الاعتمادات','View Approvals'),
+  ('approvals.approve','الموافقة والرفض','Approve/Reject'),
+  ('workflows.manage','إدارة مسارات العمل','Manage Workflows'),
+  ('users.manage','إدارة المستخدمين','Manage Users'),
+  ('reports.view','عرض التقارير','View Reports'),
+  ('ai.configure','ضبط وكلاء AI','Configure AI'),
+  ('settings.manage','إدارة الإعدادات','Manage Settings'),
+  ('audit.view','عرض سجل المراجعة','View Audit Trail'),
+  ('integrations.manage','إدارة التكاملات','Manage Integrations'),
+] %}
+
+<!-- ROLES CARDS -->
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.75rem;margin-bottom:1.5rem;">
+  {% for role_id, name_ar, name_en, badge, color, user_count in roles %}
+  <div class="card" style="text-align:center;border-top:3px solid {{ color }};">
+    <div style="width:44px;height:44px;border-radius:12px;background:{{ color }}20;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">
+      <i class="fa fa-{% if role_id == 'super_admin' %}crown{% elif role_id == 'admin' %}shield-halved{% elif role_id == 'manager' %}user-tie{% elif role_id == 'reviewer' %}eye{% else %}user{% endif %}" style="color:{{ color }};font-size:1.1rem;"></i>
+    </div>
+    <h3 style="font-weight:800;font-size:0.875rem;margin-bottom:0.25rem;">{% if lang == 'ar' %}{{ name_ar }}{% else %}{{ name_en }}{% endif %}</h3>
+    <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.5rem;">{{ user_count }} {% if lang == 'ar' %}مستخدم{% else %}users{% endif %}</p>
+    <span class="badge badge-{{ badge }}" style="font-size:0.7rem;">{{ role_id }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- PERMISSIONS MATRIX -->
+<div class="card" style="padding:0;overflow:hidden;">
+  <div style="padding:1.25rem;border-bottom:1px solid var(--border);">
+    <h3 style="font-weight:700;">{% if lang == 'ar' %}مصفوفة الصلاحيات{% else %}Permissions Matrix{% endif %}</h3>
+  </div>
+  <div style="overflow-x:auto;">
+    <table style="min-width:700px;">
+      <thead>
+        <tr style="background:var(--bg);">
+          <th style="width:200px;">{% if lang == 'ar' %}الصلاحية{% else %}Permission{% endif %}</th>
+          {% for role_id, name_ar, name_en, badge, color, uc in roles %}
+          <th style="text-align:center;width:100px;color:{{ color }};">{% if lang == 'ar' %}{{ name_ar }}{% else %}{{ name_en }}{% endif %}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+      {% set perm_matrix = {
+        'documents.view': [True, True, True, True, True],
+        'documents.upload': [True, True, True, True, False],
+        'documents.delete': [True, True, True, False, False],
+        'approvals.view': [True, True, True, True, True],
+        'approvals.approve': [True, True, True, True, False],
+        'workflows.manage': [True, True, True, False, False],
+        'users.manage': [True, True, False, False, False],
+        'reports.view': [True, True, True, True, True],
+        'ai.configure': [True, True, False, False, False],
+        'settings.manage': [True, False, False, False, False],
+        'audit.view': [True, True, True, False, False],
+        'integrations.manage': [True, True, False, False, False],
+      } %}
+      {% for perm_id, perm_ar, perm_en in permissions %}
+      <tr>
+        <td>
+          <div style="font-weight:600;font-size:0.875rem;">{% if lang == 'ar' %}{{ perm_ar }}{% else %}{{ perm_en }}{% endif %}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">{{ perm_id }}</div>
+        </td>
+        {% set vals = perm_matrix.get(perm_id, [False,False,False,False,False]) %}
+        {% for allowed in vals %}
+        <td style="text-align:center;">
+          {% if allowed %}
+          <i class="fa fa-check-circle" style="color:#10B981;font-size:1.1rem;"></i>
+          {% else %}
+          <i class="fa fa-xmark-circle" style="color:var(--border);font-size:1.1rem;"></i>
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,2 @@
+- [Replit Package Blocklist](replit-package-blocklist.md) — python-jose is blocked (403); use PyJWT instead. bcrypt 5.x breaks passlib; pin bcrypt==4.0.1
+- [Replit DB URL Override](replit-db-url.md) — Replit auto-sets DATABASE_URL to PostgreSQL; use a custom env var name (DOCIQ_DATABASE_URL) and default to SQLite to avoid psycopg2 errors

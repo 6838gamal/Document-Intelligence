@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}مسارات العمل{% else %}Workflows{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}مسارات العمل{% else %}Workflows{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{{ workflows|length }} {% if lang == 'ar' %}مسار{% else %}workflows{% endif %}</p>
+  </div>
+  <a href="/workflows/builder" class="btn-primary"><i class="fa fa-plus"></i> {% if lang == 'ar' %}مسار جديد{% else %}New Workflow{% endif %}</a>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1rem;">
+  {% for wf in workflows %}
+  <div class="card" style="position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;{% if dir == 'rtl' %}right:0;{% else %}left:0;{% endif %}width:4px;height:100%;background:{% if wf.status == 'active' %}var(--success){% elif wf.status == 'draft' %}var(--warning){% else %}var(--text-muted){% endif %};"></div>
+    <div style="{% if dir == 'rtl' %}padding-right:1rem;{% else %}padding-left:1rem;{% endif %}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.75rem;">
+        <div>
+          <h3 style="font-weight:700;font-size:0.9rem;margin-bottom:0.25rem;">{{ wf.name }}</h3>
+          <p style="font-size:0.8rem;color:var(--text-muted);">{{ wf.description[:80] if wf.description else '' }}</p>
+        </div>
+        <span class="badge {% if wf.status == 'active' %}badge-success{% elif wf.status == 'draft' %}badge-warning{% else %}badge-gray{% endif %}" style="flex-shrink:0;margin-{% if dir == 'rtl' %}right{% else %}left{% endif %}:0.75rem;">
+          {% if wf.status == 'active' %}{% if lang == 'ar' %}نشط{% else %}Active{% endif %}
+          {% elif wf.status == 'draft' %}{% if lang == 'ar' %}مسودة{% else %}Draft{% endif %}
+          {% else %}{% if lang == 'ar' %}غير نشط{% else %}Inactive{% endif %}{% endif %}
+        </span>
+      </div>
+      <div style="display:flex;gap:1.5rem;margin-bottom:1rem;font-size:0.8rem;">
+        <div><span style="color:var(--text-muted);">{% if lang == 'ar' %}الفئة{% else %}Category{% endif %}: </span><span style="font-weight:600;">{{ wf.category or '—' }}</span></div>
+        <div><span style="color:var(--text-muted);">{% if lang == 'ar' %}تشغيلات{% else %}Runs{% endif %}: </span><span style="font-weight:700;color:var(--accent);">{{ wf.run_count }}</span></div>
+        <div><span style="color:var(--text-muted);">{% if lang == 'ar' %}عقد{% else %}Nodes{% endif %}: </span><span style="font-weight:600;">{{ wf.nodes|length if wf.nodes else 0 }}</span></div>
+      </div>
+      <div style="display:flex;gap:0.5rem;">
+        <a href="/workflows/builder/{{ wf.id }}" class="btn-primary" style="padding:0.375rem 0.875rem;font-size:0.8rem;flex:1;justify-content:center;"><i class="fa fa-pencil"></i> {% if lang == 'ar' %}تعديل{% else %}Edit{% endif %}</a>
+        <button class="btn-secondary" style="padding:0.375rem 0.875rem;font-size:0.8rem;"><i class="fa fa-play"></i></button>
+        <button class="btn-secondary" style="padding:0.375rem 0.875rem;font-size:0.8rem;"><i class="fa fa-copy"></i></button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- ADD NEW CARD -->
+  <a href="/workflows/builder" style="text-decoration:none;">
+    <div class="card" style="border:2px dashed var(--border);background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;min-height:180px;cursor:pointer;transition:0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:48px;height:48px;background:rgba(59,130,246,0.08);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:0.75rem;">
+        <i class="fa fa-plus" style="color:var(--accent);font-size:1.25rem;"></i>
+      </div>
+      <p style="font-weight:700;color:var(--text-muted);">{% if lang == 'ar' %}إنشاء مسار جديد{% else %}Create New Workflow{% endif %}</p>
+    </div>
+  </a>
+</div>
+{% endblock %}

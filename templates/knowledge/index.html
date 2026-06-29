@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}قاعدة المعرفة{% else %}Knowledge Base{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}قاعدة المعرفة{% else %}Knowledge Base{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{{ articles|length }} {% if lang == 'ar' %}مقالة في{% else %}articles across{% endif %} {{ collections|length }} {% if lang == 'ar' %}مجموعة{% else %}collections{% endif %}</p>
+  </div>
+  <div style="display:flex;gap:0.75rem;">
+    <button class="btn-secondary"><i class="fa fa-plus"></i> {% if lang == 'ar' %}مقالة جديدة{% else %}New Article{% endif %}</button>
+    <button class="btn-primary"><i class="fa fa-robot"></i> {% if lang == 'ar' %}استيراد من مستند{% else %}Import from Doc{% endif %}</button>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:240px 1fr;gap:1.25rem;">
+  <!-- COLLECTIONS SIDEBAR -->
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div class="card">
+      <h3 style="font-weight:700;font-size:0.875rem;margin-bottom:1rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">{% if lang == 'ar' %}المجموعات{% else %}Collections{% endif %}</h3>
+      <div style="display:flex;flex-direction:column;gap:0.25rem;">
+        <a href="#" style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;border-radius:8px;text-decoration:none;color:white;background:var(--accent);">
+          <span style="font-size:0.875rem;font-weight:600;">{% if lang == 'ar' %}الكل{% else %}All{% endif %}</span>
+          <span style="background:rgba(255,255,255,0.25);border-radius:20px;padding:0.1rem 0.5rem;font-size:0.75rem;font-weight:700;">{{ articles|length }}</span>
+        </a>
+        {% for col in collections %}
+        <a href="#" style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;border-radius:8px;text-decoration:none;color:var(--text);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+          <span style="font-size:0.875rem;">{{ col }}</span>
+          <span style="background:var(--bg);border-radius:20px;padding:0.1rem 0.5rem;font-size:0.75rem;font-weight:700;color:var(--text-muted);">{{ articles|selectattr('collection','eq',col)|list|length }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-weight:700;font-size:0.875rem;margin-bottom:0.875rem;">{% if lang == 'ar' %}إحصائيات RAG{% else %}RAG Statistics{% endif %}</h3>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        {% for label_ar, label_en, val in [('المستندات المفهرسة','Indexed Docs','247'),('قطع النص','Text Chunks','1,842'),('الاستعلامات اليوم','Queries Today','89'),('متوسط الدقة','Avg Accuracy','94.7%')] %}
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.8rem;color:var(--text-muted);">{% if lang == 'ar' %}{{ label_ar }}{% else %}{{ label_en }}{% endif %}</span>
+          <span style="font-weight:700;font-size:0.875rem;color:var(--accent);">{{ val }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ARTICLES -->
+  <div>
+    <div style="position:relative;margin-bottom:1rem;">
+      <i class="fa fa-magnifying-glass" style="position:absolute;{% if dir == 'rtl' %}right:1rem;{% else %}left:1rem;{% endif %}top:50%;transform:translateY(-50%);color:var(--text-muted);"></i>
+      <input type="text" placeholder="{% if lang == 'ar' %}ابحث في قاعدة المعرفة...{% else %}Search knowledge base...{% endif %}" style="{% if dir == 'rtl' %}padding-right:2.75rem;{% else %}padding-left:2.75rem;{% endif %}" />
+    </div>
+
+    <div style="display:grid;gap:0.875rem;">
+      {% for art in articles %}
+      <div class="card" style="transition:0.15s;cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div style="width:40px;height:40px;background:rgba(139,92,246,0.08);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fa fa-book-open" style="color:#8B5CF6;font-size:1rem;"></i>
+            </div>
+            <div>
+              <h3 style="font-weight:700;font-size:0.9rem;margin-bottom:0.2rem;">{{ art.title }}</h3>
+              <span style="font-size:0.75rem;color:var(--text-muted);">{{ art.collection }}</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">
+            <span style="font-size:0.75rem;color:var(--text-muted);"><i class="fa fa-eye" style="margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.25rem;"></i>{{ art.view_count }}</span>
+            <span class="badge badge-{% if art.is_published %}success{% else %}gray{% endif %}">{% if art.is_published %}{% if lang == 'ar' %}منشور{% else %}Published{% endif %}{% else %}{% if lang == 'ar' %}مسودة{% else %}Draft{% endif %}{% endif %}</span>
+          </div>
+        </div>
+        <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.6;">{{ art.content[:150] }}...</p>
+        {% if art.tags %}
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.75rem;">
+          {% for tag in art.tags %}<span style="padding:0.2rem 0.6rem;background:rgba(59,130,246,0.08);border-radius:20px;font-size:0.75rem;color:var(--accent);">{{ tag }}</span>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:3rem;color:var(--text-muted);">
+        <i class="fa fa-book-open" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:1rem;"></i>
+        <h3 style="font-weight:700;">{% if lang == 'ar' %}لا توجد مقالات{% else %}No articles yet{% endif %}</h3>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

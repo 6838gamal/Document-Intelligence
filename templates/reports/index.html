@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}التقارير والتحليلات{% else %}Reports & Analytics{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}التقارير والتحليلات{% else %}Reports & Analytics{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{% if lang == 'ar' %}لوحة بيانات تشغيلية شاملة{% else %}Comprehensive operational dashboard{% endif %}</p>
+  </div>
+  <div style="display:flex;gap:0.75rem;">
+    <select style="width:auto;padding:0.5rem 1rem;"><option>{% if lang == 'ar' %}آخر 30 يوم{% else %}Last 30 Days{% endif %}</option><option>{% if lang == 'ar' %}آخر 7 أيام{% else %}Last 7 Days{% endif %}</option><option>{% if lang == 'ar' %}هذه السنة{% else %}This Year{% endif %}</option></select>
+    <button class="btn-secondary"><i class="fa fa-file-export"></i> {% if lang == 'ar' %}تصدير{% else %}Export{% endif %}</button>
+  </div>
+</div>
+
+<!-- KPI METRICS -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
+  {% for val, label_ar, label_en, icon, color, sub in [
+    (total_docs,'إجمالي المستندات','Total Documents','file-lines','#3B82F6','+12%'),
+    (str(automation_rate)+'%','معدل الأتمتة','Automation Rate','robot','#10B981','+3.2%'),
+    ('2.4s','متوسط المعالجة','Avg Processing','bolt','#F59E0B','-0.3s'),
+    ('96.2%','دقة الاستخراج','Extraction Accuracy','bullseye','#8B5CF6','+1.1%')
+  ] %}
+  <div class="kpi-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+      <div>
+        <p style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}{{ label_ar }}{% else %}{{ label_en }}{% endif %}</p>
+        <h2 style="font-size:1.75rem;font-weight:900;color:var(--text);">{{ val }}</h2>
+        <span class="stat-up" style="font-size:0.8rem;font-weight:600;"><i class="fa fa-arrow-trend-up"></i> {{ sub }}</span>
+      </div>
+      <div style="width:44px;height:44px;background:rgba(0,0,0,0.05);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-{{ icon }}" style="color:{{ color }};font-size:1.25rem;"></i>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- MAIN CHARTS ROW -->
+<div style="display:grid;grid-template-columns:3fr 2fr;gap:1rem;margin-bottom:1rem;">
+  <div class="card">
+    <h3 style="font-weight:700;margin-bottom:1.25rem;">{% if lang == 'ar' %}معدل معالجة المستندات - شهرياً{% else %}Monthly Document Processing Rate{% endif %}</h3>
+    <canvas id="monthlyChart" height="200"></canvas>
+  </div>
+  <div class="card">
+    <h3 style="font-weight:700;margin-bottom:1.25rem;">{% if lang == 'ar' %}توزيع حسب الفئة{% else %}Distribution by Category{% endif %}</h3>
+    <canvas id="categoryChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- SECOND ROW CHARTS -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;">
+  <div class="card">
+    <h3 style="font-weight:700;margin-bottom:1.25rem;">{% if lang == 'ar' %}حالات الاعتماد{% else %}Approval Status Distribution{% endif %}</h3>
+    <canvas id="approvalChart" height="180"></canvas>
+  </div>
+  <div class="card">
+    <h3 style="font-weight:700;margin-bottom:1.25rem;">{% if lang == 'ar' %}أداء الأقسام{% else %}Department Performance{% endif %}</h3>
+    <canvas id="deptChart" height="180"></canvas>
+  </div>
+  <div class="card">
+    <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang == 'ar' %}تحليل الاختناقات{% else %}Bottleneck Analysis{% endif %}</h3>
+    {% for stage_ar, stage_en, pct, color in [('رفع المستند','Upload',5,'#10B981'),('OCR والاستخراج','OCR Extract',12,'#3B82F6'),('مراجعة AI','AI Review',8,'#8B5CF6'),('اعتماد L1','L1 Approval',45,'#F59E0B'),('اعتماد L2','L2 Approval',38,'#EF4444'),('الأرشفة','Archiving',3,'#10B981')] %}
+    <div style="margin-bottom:0.75rem;">
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.3rem;">
+        <span>{% if lang == 'ar' %}{{ stage_ar }}{% else %}{{ stage_en }}{% endif %}</span>
+        <span style="font-weight:700;color:{{ color }};">{{ pct }}h</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:{{ [pct*2,100]|min }}%;background:{{ color }};"></div></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- TABLE: TOP PROCESSING DOCUMENTS -->
+<div class="card" style="padding:0;overflow:hidden;">
+  <div style="padding:1.25rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+    <h3 style="font-weight:700;">{% if lang == 'ar' %}أعلى المستندات معالجةً{% else %}Top Processed Documents{% endif %}</h3>
+    <button class="btn-secondary" style="font-size:0.8rem;padding:0.3rem 0.75rem;"><i class="fa fa-download"></i> CSV</button>
+  </div>
+  <table>
+    <thead><tr>
+      <th>#</th><th>{% if lang == 'ar' %}المستند{% else %}Document{% endif %}</th>
+      <th>{% if lang == 'ar' %}الفئة{% else %}Category{% endif %}</th>
+      <th>{% if lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+      <th>{% if lang == 'ar' %}دقة AI{% else %}AI Accuracy{% endif %}</th>
+      <th>{% if lang == 'ar' %}وقت المعالجة{% else %}Processing Time{% endif %}</th>
+    </tr></thead>
+    <tbody>
+    {% for i, label, cat, status, acc, time in [
+      (1,'عقد إنشاء الجسر - المرحلة الأولى','عقود','approved',97.5,'1.2s'),
+      (2,'مخططات هندسية - برج الأعمال','مخططات','pending_approval',89.2,'2.1s'),
+      (3,'فاتورة موردين - مجموعة الإنشاءات','فواتير','reviewed',95.1,'0.8s'),
+      (4,'تقرير سلامة - مستودعات الدمام','تقارير','approved',91.8,'1.5s'),
+      (5,'سياسة الموارد البشرية','سياسات','approved',96.4,'0.9s')
+    ] %}
+    <tr>
+      <td style="color:var(--text-muted);">{{ i }}</td>
+      <td style="font-weight:600;">{{ label }}</td>
+      <td><span class="badge badge-gray">{{ cat }}</span></td>
+      <td>{% if status == 'approved' %}<span class="badge badge-success">{% if lang == 'ar' %}معتمد{% else %}Approved{% endif %}</span>{% else %}<span class="badge badge-warning">{% if lang == 'ar' %}انتظار{% else %}Pending{% endif %}</span>{% endif %}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <div class="progress-bar" style="width:60px;"><div class="progress-fill" style="width:{{ acc }}%;background:{% if acc > 90 %}var(--success){% else %}var(--warning){% endif %};"></div></div>
+          <span style="font-weight:700;font-size:0.8rem;">{{ acc }}%</span>
+        </div>
+      </td>
+      <td style="font-size:0.875rem;color:var(--text-muted);">{{ time }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const isDark = document.documentElement.classList.contains('dark');
+const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+const textColor = isDark ? '#94A3B8' : '#64748B';
+Chart.defaults.font.family = "'Cairo','Inter',sans-serif";
+const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'bar',
+  data: {
+    labels: months.slice(0,7),
+    datasets: [
+      { label: '{% if lang == "ar" %}معالجة{% else %}Processed{% endif %}', data: [45,62,38,78,90,55,82], backgroundColor: 'rgba(59,130,246,0.7)', borderRadius: 6 },
+      { label: '{% if lang == "ar" %}معتمدة{% else %}Approved{% endif %}', data: [38,55,30,65,78,48,72], backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6 }
+    ]
+  },
+  options: { responsive:true, plugins:{ legend:{ labels:{ color:textColor } } }, scales:{ x:{ grid:{ color:gridColor }, ticks:{ color:textColor } }, y:{ grid:{ color:gridColor }, ticks:{ color:textColor } } } }
+});
+new Chart(document.getElementById('categoryChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['{% if lang == "ar" %}عقود{% else %}Contracts{% endif %}','{% if lang == "ar" %}فواتير{% else %}Invoices{% endif %}','{% if lang == "ar" %}تقارير{% else %}Reports{% endif %}','{% if lang == "ar" %}مخططات{% else %}Drawings{% endif %}','{% if lang == "ar" %}أخرى{% else %}Other{% endif %}'],
+    datasets: [{ data: [35,28,20,12,5], backgroundColor: ['#3B82F6','#10B981','#8B5CF6','#F59E0B','#94A3B8'], borderWidth: 0 }]
+  },
+  options: { responsive:true, cutout:'68%', plugins:{ legend:{ position:'bottom', labels:{ color:textColor, boxWidth:10, padding:12 } } } }
+});
+new Chart(document.getElementById('approvalChart'), {
+  type: 'pie',
+  data: {
+    labels: ['{% if lang == "ar" %}معتمد{% else %}Approved{% endif %}','{% if lang == "ar" %}انتظار{% else %}Pending{% endif %}','{% if lang == "ar" %}مرفوض{% else %}Rejected{% endif %}'],
+    datasets: [{ data: [72, 20, 8], backgroundColor: ['#10B981','#F59E0B','#EF4444'], borderWidth: 0 }]
+  },
+  options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ color:textColor, boxWidth:10, padding:12 } } } }
+});
+new Chart(document.getElementById('deptChart'), {
+  type: 'bar', indexAxis: 'y',
+  data: {
+    labels: ['{% if lang == "ar" %}إدارة المستندات{% else %}Doc Mgmt{% endif %}','{% if lang == "ar" %}المالية{% else %}Finance{% endif %}','{% if lang == "ar" %}المشاريع{% else %}Projects{% endif %}','{% if lang == "ar" %}الموارد البشرية{% else %}HR{% endif %}'],
+    datasets: [{ label: '{% if lang == "ar" %}معالجة{% else %}Processed{% endif %}', data: [85,72,91,64], backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 4 }]
+  },
+  options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ color:gridColor }, ticks:{ color:textColor } }, y:{ grid:{ display:false }, ticks:{ color:textColor } } } }
+});
+</script>
+{% endblock %}

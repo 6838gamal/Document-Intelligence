@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}مراجعة AI{% else %}AI Review{% endif %} - {{ doc.title }}{% endblock %}
+{% block content %}
+<div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:var(--text-muted);">
+    <a href="/documents" style="color:var(--accent);text-decoration:none;">{% if lang == 'ar' %}المستندات{% else %}Documents{% endif %}</a>
+    <i class="fa fa-chevron-{% if dir == 'rtl' %}left{% else %}right{% endif %}" style="font-size:0.7rem;"></i>
+    <a href="/documents/{{ doc.id }}" style="color:var(--accent);text-decoration:none;">{{ doc.title[:30] }}...</a>
+    <i class="fa fa-chevron-{% if dir == 'rtl' %}left{% else %}right{% endif %}" style="font-size:0.7rem;"></i>
+    <span>{% if lang == 'ar' %}مراجعة AI{% else %}AI Review{% endif %}</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <span style="padding:0.3rem 0.75rem;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:20px;font-size:0.8rem;font-weight:700;color:#10B981;">
+      <span class="animate-pulse-slow" style="display:inline-block;width:6px;height:6px;background:#10B981;border-radius:50%;margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.4rem;vertical-align:middle;"></span>
+      {% if lang == 'ar' %}معالجة مكتملة{% else %}Processing Complete{% endif %}
+    </span>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;height:calc(100vh - 180px);">
+  <!-- DOCUMENT VIEWER -->
+  <div class="card" style="display:flex;flex-direction:column;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
+      <h3 style="font-weight:700;">{% if lang == 'ar' %}المستند الأصلي{% else %}Original Document{% endif %}</h3>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.8rem;"><i class="fa fa-magnifying-glass-minus"></i></button>
+        <span style="padding:0.3rem 0.6rem;font-size:0.8rem;border:1px solid var(--border);border-radius:6px;">100%</span>
+        <button class="btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.8rem;"><i class="fa fa-magnifying-glass-plus"></i></button>
+      </div>
+    </div>
+    <div style="flex:1;background:var(--bg);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;">
+      <div style="background:white;width:85%;min-height:500px;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:2rem;position:relative;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #1B2A4A;">
+          <div><div style="font-size:0.9rem;font-weight:800;color:#1B2A4A;">{{ doc.title }}</div><div style="font-size:0.7rem;color:#64748B;">{{ doc.category }}</div></div>
+          <div style="font-size:0.7rem;color:#64748B;text-align:{% if dir == 'rtl' %}left{% else %}right{% endif %};">رقم المستند: DOC-{{ doc.id }}<br>التاريخ: {{ doc.created_at.strftime('%Y/%m/%d') if doc.created_at else '' }}</div>
+        </div>
+        <!-- Highlighted extraction areas -->
+        {% if doc.extracted_data %}
+        {% for k, v in doc.extracted_data.items() %}
+        <div style="margin-bottom:0.75rem;padding:0.5rem;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:4px;position:relative;">
+          <div style="font-size:0.65rem;color:#3B82F6;font-weight:700;text-transform:uppercase;">{{ k }}</div>
+          <div style="font-size:0.875rem;color:#1E293B;font-weight:600;">{{ v }}</div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <div style="margin-top:1rem;height:60px;background:#F1F5F9;border-radius:4px;"></div>
+        <div style="margin-top:0.5rem;height:40px;background:#F1F5F9;border-radius:4px;width:70%;"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:1rem;padding-top:1rem;border-top:1px solid var(--border);margin-top:1rem;">
+      <button class="btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.8rem;"><i class="fa fa-chevron-{% if dir == 'rtl' %}right{% else %}left{% endif %}"></i></button>
+      <span style="font-size:0.875rem;">1 / {{ doc.page_count }}</span>
+      <button class="btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.8rem;"><i class="fa fa-chevron-{% if dir == 'rtl' %}left{% else %}right{% endif %}"></i></button>
+    </div>
+  </div>
+
+  <!-- EXTRACTED FIELDS PANEL -->
+  <div style="display:flex;flex-direction:column;gap:1rem;overflow:auto;">
+    <!-- Confidence Score -->
+    <div class="card" style="background:linear-gradient(135deg,rgba(16,185,129,0.08) 0%,transparent 100%);border-color:rgba(16,185,129,0.2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+        <h3 style="font-weight:700;">{% if lang == 'ar' %}نتيجة الثقة{% else %}Confidence Score{% endif %}</h3>
+        <span style="font-size:2rem;font-weight:900;color:#10B981;">{{ doc.confidence_score }}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:{{ doc.confidence_score }}%;background:#10B981;"></div></div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;">{% if lang == 'ar' %}ثقة عالية في البيانات المستخرجة{% else %}High confidence in extracted data{% endif %}</p>
+    </div>
+
+    <!-- Extracted Fields -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <h3 style="font-weight:700;">{% if lang == 'ar' %}الحقول المستخرجة{% else %}Extracted Fields{% endif %}</h3>
+        <button class="btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.8rem;"><i class="fa fa-plus"></i> {% if lang == 'ar' %}إضافة{% else %}Add{% endif %}</button>
+      </div>
+      {% if doc.extracted_data %}
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        {% for k, v in doc.extracted_data.items() %}
+        <div style="padding:0.875rem;border-radius:10px;border:1px solid var(--border);background:var(--bg);" x-data="{ editing: false }">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;">
+            <label style="font-size:0.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;">{{ k }}</label>
+            <div style="display:flex;gap:0.4rem;">
+              <span style="width:18px;height:18px;background:rgba(16,185,129,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fa fa-check" style="font-size:0.6rem;color:#10B981;"></i></span>
+              <button @click="editing = !editing" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;"><i class="fa fa-pencil"></i></button>
+            </div>
+          </div>
+          <div x-show="!editing">
+            <span style="font-weight:700;font-size:0.9rem;">{{ v }}</span>
+          </div>
+          <div x-show="editing" x-transition>
+            <input type="text" value="{{ v }}" style="font-weight:700;" />
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:2rem;color:var(--text-muted);">
+        <i class="fa fa-magnifying-glass-chart" style="font-size:2rem;opacity:0.3;margin-bottom:0.5rem;display:block;"></i>
+        <p>{% if lang == 'ar' %}لا توجد بيانات مستخرجة{% else %}No extracted data{% endif %}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Validation Actions -->
+    <div class="card">
+      <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang == 'ar' %}إجراءات التحقق{% else %}Validation Actions{% endif %}</h3>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        <button class="btn-primary" style="justify-content:center;background:#10B981;"><i class="fa fa-check-double"></i> {% if lang == 'ar' %}تأكيد البيانات وإرسال للاعتماد{% else %}Confirm & Send for Approval{% endif %}</button>
+        <button class="btn-secondary" style="justify-content:center;"><i class="fa fa-rotate"></i> {% if lang == 'ar' %}إعادة المعالجة{% else %}Reprocess{% endif %}</button>
+        <button class="btn-secondary" style="justify-content:center;"><i class="fa fa-user-pen"></i> {% if lang == 'ar' %}مراجعة يدوية{% else %}Manual Review{% endif %}</button>
+        <button class="btn-secondary" style="justify-content:center;color:var(--danger);border-color:var(--danger);"><i class="fa fa-xmark"></i> {% if lang == 'ar' %}رفض المستند{% else %}Reject Document{% endif %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

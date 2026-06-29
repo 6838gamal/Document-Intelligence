@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}مركز وكلاء AI{% else %}AI Agents Center{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}مركز وكلاء الذكاء الاصطناعي{% else %}AI Agents Center{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{% if lang == 'ar' %}إدارة ومراقبة وكلاء AI{% else %}Manage and monitor AI agents{% endif %}</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <span style="padding:0.3rem 0.875rem;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:20px;font-size:0.8rem;font-weight:700;color:#10B981;">
+      <span style="display:inline-block;width:6px;height:6px;background:#10B981;border-radius:50%;margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.4rem;vertical-align:middle;" class="animate-pulse-slow"></span>
+      {% if lang == 'ar' %}4 وكلاء نشطون{% else %}4 Agents Active{% endif %}
+    </span>
+    <button class="btn-primary"><i class="fa fa-plus"></i> {% if lang == 'ar' %}وكيل جديد{% else %}New Agent{% endif %}</button>
+  </div>
+</div>
+
+<!-- SYSTEM HEALTH -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
+  {% for label_ar, label_en, val, icon, color in [
+    ('مهام اليوم','Tasks Today','405','list-check','#3B82F6'),
+    ('معدل النجاح','Success Rate','97.1%','chart-line','#10B981'),
+    ('متوسط الاستجابة','Avg Response','1.2s','bolt','#F59E0B'),
+    ('استهلاك الرموز','Token Usage','128K','cpu','#8B5CF6')
+  ] %}
+  <div class="kpi-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <p style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}{{ label_ar }}{% else %}{{ label_en }}{% endif %}</p>
+        <h2 style="font-size:1.5rem;font-weight:900;">{{ val }}</h2>
+      </div>
+      <div style="width:44px;height:44px;background:rgba(0,0,0,0.04);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-{{ icon }}" style="color:{{ color }};font-size:1.1rem;"></i>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- AGENTS GRID -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;">
+  {% for agent in agents %}
+  <div class="card" x-data="{ expanded: false }">
+    <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;gap:0.875rem;">
+        <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba({% if agent.color == 'blue' %}59,130,246{% elif agent.color == 'green' %}16,185,129{% elif agent.color == 'purple' %}139,92,246{% elif agent.color == 'orange' %}249,115,22{% elif agent.color == 'red' %}239,68,68{% else %}20,184,166{% endif %},0.12);position:relative;">
+          <i class="fa fa-{{ agent.icon }}" style="color:{% if agent.color == 'blue' %}#3B82F6{% elif agent.color == 'green' %}#10B981{% elif agent.color == 'purple' %}#8B5CF6{% elif agent.color == 'orange' %}#F97316{% elif agent.color == 'red' %}#EF4444{% else %}#14B8A6{% endif %};font-size:1.25rem;"></i>
+          <span style="position:absolute;bottom:-3px;{% if dir == 'rtl' %}left:-3px;{% else %}right:-3px;{% endif %}width:12px;height:12px;border-radius:50%;border:2px solid var(--card);background:{% if agent.status == 'active' %}#10B981{% else %}#F59E0B{% endif %};"></span>
+        </div>
+        <div>
+          <h3 style="font-weight:800;font-size:0.9rem;">{% if lang == 'ar' %}{{ agent.name_ar }}{% else %}{{ agent.name }}{% endif %}</h3>
+          <span class="badge {% if agent.status == 'active' %}badge-success{% else %}badge-warning{% endif %}" style="font-size:0.7rem;">
+            {% if agent.status == 'active' %}{% if lang == 'ar' %}نشط{% else %}Active{% endif %}{% else %}{% if lang == 'ar' %}خامل{% else %}Idle{% endif %}{% endif %}
+          </span>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.4rem;">
+        <button style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text-muted);font-size:0.75rem;display:flex;align-items:center;justify-content:center;"><i class="fa fa-{% if agent.status == 'active' %}pause{% else %}play{% endif %}"></i></button>
+        <button style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text-muted);font-size:0.75rem;display:flex;align-items:center;justify-content:center;"><i class="fa fa-gear"></i></button>
+      </div>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.5;margin-bottom:1rem;">{{ agent.description }}</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-bottom:1rem;">
+      <div style="text-align:center;padding:0.5rem;background:var(--bg);border-radius:8px;">
+        <div style="font-weight:800;font-size:1rem;">{{ agent.tasks_today }}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);">{% if lang == 'ar' %}مهام اليوم{% else %}Today{% endif %}</div>
+      </div>
+      <div style="text-align:center;padding:0.5rem;background:var(--bg);border-radius:8px;">
+        <div style="font-weight:800;font-size:1rem;color:var(--success);">{{ agent.success_rate }}%</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);">{% if lang == 'ar' %}نجاح{% else %}Success{% endif %}</div>
+      </div>
+      <div style="text-align:center;padding:0.5rem;background:var(--bg);border-radius:8px;">
+        <div style="font-weight:800;font-size:1rem;">{{ agent.avg_time }}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);">{% if lang == 'ar' %}سرعة{% else %}Speed{% endif %}</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.3rem;">
+        <span style="color:var(--text-muted);">{% if lang == 'ar' %}الحِمل{% else %}Load{% endif %}</span>
+        <span style="font-weight:700;">{{ (agent.tasks_today / 5)|int }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:{{ [agent.tasks_today / 5, 100]|min|int }}%;background:{% if agent.tasks_today < 30 %}var(--success){% elif agent.tasks_today < 60 %}var(--warning){% else %}var(--danger){% endif %};"></div>
+      </div>
+    </div>
+
+    <div x-show="expanded" x-transition style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+      <h4 style="font-size:0.8rem;font-weight:700;margin-bottom:0.5rem;color:var(--text-muted);">{% if lang == 'ar' %}سجل الأنشطة الأخيرة{% else %}Recent Activity Log{% endif %}</h4>
+      {% for i in range(3) %}
+      <div style="font-size:0.78rem;color:var(--text-muted);padding:0.3rem 0;border-bottom:1px solid var(--border);">
+        <i class="fa fa-check" style="color:var(--success);margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.4rem;"></i>
+        {% if lang == 'ar' %}اكتملت المهمة #{{ 1000 + loop.index }} بنجاح{% else %}Task #{{ 1000 + loop.index }} completed successfully{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <button @click="expanded = !expanded" style="width:100%;margin-top:0.875rem;padding:0.4rem;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:0.8rem;color:var(--text-muted);">
+      <i :class="expanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'" style="margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.4rem;"></i>
+      <span x-text="expanded ? '{% if lang == 'ar' %}إخفاء السجل{% else %}Hide Log{% endif %}' : '{% if lang == 'ar' %}عرض السجل{% else %}View Log{% endif %}'"></span>
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

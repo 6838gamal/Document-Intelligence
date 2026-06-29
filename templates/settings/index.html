@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}الإعدادات{% else %}Settings{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}إعدادات النظام{% else %}System Settings{% endif %}</h1>
+  <p style="color:var(--text-muted);font-size:0.875rem;">{% if lang == 'ar' %}إدارة تفضيلات واعدادات المنصة{% else %}Manage platform preferences and configuration{% endif %}</p>
+</div>
+
+<div style="display:grid;grid-template-columns:220px 1fr;gap:1.5rem;" x-data="{ section: 'general' }">
+  <!-- Settings Nav -->
+  <div class="card" style="height:fit-content;">
+    {% set setting_sections = [
+      ('general','fa-gear','الإعدادات العامة','General'),
+      ('appearance','fa-palette','المظهر','Appearance'),
+      ('notifications','fa-bell','الإشعارات','Notifications'),
+      ('ai','fa-robot','إعدادات AI','AI Settings'),
+      ('security','fa-shield-halved','الأمان','Security'),
+      ('storage','fa-hard-drive','التخزين','Storage'),
+      ('email','fa-envelope','البريد الإلكتروني','Email'),
+      ('api','fa-code','API والمفاتيح','API & Keys'),
+    ] %}
+    {% for s_id, icon, s_ar, s_en in setting_sections %}
+    <button @click="section = '{{ s_id }}'"
+      :style="section === '{{ s_id }}' ? 'color:var(--accent);background:rgba(59,130,246,0.08);border-color:transparent;' : ''"
+      style="display:flex;align-items:center;gap:0.75rem;width:100%;padding:0.625rem 0.875rem;border-radius:8px;border:1px solid transparent;background:none;cursor:pointer;color:var(--text);margin-bottom:0.25rem;text-align:{% if dir == 'rtl' %}right{% else %}left{% endif %};">
+      <i class="fa {{ icon }}" style="width:16px;text-align:center;font-size:0.875rem;opacity:0.7;"></i>
+      <span style="font-size:0.875rem;font-weight:600;">{% if lang == 'ar' %}{{ s_ar }}{% else %}{{ s_en }}{% endif %}</span>
+    </button>
+    {% endfor %}
+  </div>
+
+  <!-- Settings Content -->
+  <div>
+    <!-- General -->
+    <div x-show="section === 'general'" x-transition>
+      <div class="card" style="margin-bottom:1rem;">
+        <h3 style="font-weight:700;margin-bottom:1.25rem;padding-bottom:0.875rem;border-bottom:1px solid var(--border);">{% if lang == 'ar' %}معلومات المؤسسة{% else %}Organization Information{% endif %}</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+          <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}اسم المؤسسة{% else %}Organization Name{% endif %}</label><input type="text" value="شركة المشاريع الكبرى" /></div>
+          <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}رمز المؤسسة{% else %}Org Code{% endif %}</label><input type="text" value="CORP-001" /></div>
+          <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}القطاع{% else %}Sector{% endif %}</label><select><option>{% if lang == 'ar' %}إنشاءات ومقاولات{% else %}Construction{% endif %}</option></select></div>
+          <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}المنطقة الزمنية{% else %}Timezone{% endif %}</label><select><option>Asia/Riyadh (UTC+3)</option></select></div>
+          <div style="grid-column:span 2;"><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}الوصف{% else %}Description{% endif %}</label><textarea rows="3"></textarea></div>
+        </div>
+        <div style="margin-top:1.25rem;display:flex;gap:0.75rem;justify-content:flex-end;">
+          <button class="btn-secondary">{% if lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</button>
+          <button class="btn-primary">{% if lang == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <div x-show="section === 'appearance'" x-transition>
+      <div class="card">
+        <h3 style="font-weight:700;margin-bottom:1.25rem;padding-bottom:0.875rem;border-bottom:1px solid var(--border);">{% if lang == 'ar' %}إعدادات المظهر{% else %}Appearance Settings{% endif %}</h3>
+        <div style="display:grid;gap:1.25rem;">
+          <div>
+            <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.875rem;">{% if lang == 'ar' %}وضع الألوان{% else %}Color Mode{% endif %}</label>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">
+              {% for mode, icon, label_ar, label_en in [('light','sun','فاتح','Light'),('dark','moon','داكن','Dark'),('system','display','تلقائي','System')] %}
+              <label style="cursor:pointer;">
+                <input type="radio" name="theme" value="{{ mode }}" {% if theme == mode %}checked{% endif %} style="display:none;" />
+                <form method="POST" action="/auth/set-theme" style="margin:0;">
+                  <input type="hidden" name="theme" value="{{ mode }}" />
+                  <button type="submit" style="width:100%;padding:1rem;border-radius:10px;border:2px solid {% if theme == mode %}var(--accent){% else %}var(--border){% endif %};background:{% if theme == mode %}rgba(59,130,246,0.08){% else %}var(--bg){% endif %};cursor:pointer;text-align:center;">
+                    <i class="fa fa-{{ icon }}" style="font-size:1.25rem;color:{% if theme == mode %}var(--accent){% else %}var(--text-muted){% endif %};display:block;margin-bottom:0.5rem;"></i>
+                    <span style="font-size:0.875rem;font-weight:600;color:{% if theme == mode %}var(--accent){% else %}var(--text-muted){% endif %};">{% if lang == 'ar' %}{{ label_ar }}{% else %}{{ label_en }}{% endif %}</span>
+                  </button>
+                </form>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.875rem;">{% if lang == 'ar' %}اللغة الافتراضية{% else %}Default Language{% endif %}</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+              {% for l_id, l_label in [('ar','العربية (Arabic)'),('en','English')] %}
+              <form method="POST" action="/auth/set-lang" style="margin:0;">
+                <input type="hidden" name="lang" value="{{ l_id }}" />
+                <button type="submit" style="width:100%;padding:0.875rem;border-radius:10px;border:2px solid {% if lang == l_id %}var(--accent){% else %}var(--border){% endif %};background:{% if lang == l_id %}rgba(59,130,246,0.08){% else %}var(--bg){% endif %};cursor:pointer;font-weight:700;color:{% if lang == l_id %}var(--accent){% else %}var(--text-muted){% endif %};">{{ l_label }}</button>
+              </form>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Settings -->
+    <div x-show="section === 'ai'" x-transition>
+      <div class="card">
+        <h3 style="font-weight:700;margin-bottom:1.25rem;padding-bottom:0.875rem;border-bottom:1px solid var(--border);">{% if lang == 'ar' %}إعدادات الذكاء الاصطناعي{% else %}AI Configuration{% endif %}</h3>
+        <div style="display:grid;gap:1.25rem;">
+          <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}نموذج اللغة{% else %}Language Model{% endif %}</label><select><option>GPT-4o</option><option>GPT-4 Turbo</option><option>Claude 3.5 Sonnet</option><option>Gemini Pro</option></select></div>
+          <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}حد الثقة للمراجعة اليدوية{% else %}Confidence Threshold for Manual Review{% endif %}</label>
+            <div style="display:flex;align-items:center;gap:1rem;">
+              <input type="range" min="50" max="99" value="85" style="flex:1;" />
+              <span style="font-weight:700;min-width:40px;">85%</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+            <div><div style="font-weight:600;font-size:0.875rem;">{% if lang == 'ar' %}تمكين المعالجة التلقائية{% else %}Enable Auto-Processing{% endif %}</div><div style="font-size:0.8rem;color:var(--text-muted);">{% if lang == 'ar' %}معالجة المستندات تلقائياً عند الرفع{% else %}Process documents automatically on upload{% endif %}</div></div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;"><input type="checkbox" checked style="opacity:0;width:0;height:0;"><span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#10B981;transition:0.3s;border-radius:24px;"></span></label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;"><button class="btn-primary">{% if lang == 'ar' %}حفظ إعدادات AI{% else %}Save AI Settings{% endif %}</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security -->
+    <div x-show="section === 'security'" x-transition>
+      <div class="card">
+        <h3 style="font-weight:700;margin-bottom:1.25rem;padding-bottom:0.875rem;border-bottom:1px solid var(--border);">{% if lang == 'ar' %}إعدادات الأمان{% else %}Security Settings{% endif %}</h3>
+        <div style="display:grid;gap:1rem;">
+          {% for feat_ar, feat_en, enabled in [('المصادقة الثنائية (2FA)','Two-Factor Authentication',True),('انتهاء الجلسة التلقائي','Auto Session Timeout',True),('تسجيل جميع الأنشطة','Log All Activities',True),('تشفير الملفات','File Encryption',True)] %}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+            <div><div style="font-weight:600;font-size:0.875rem;">{% if lang == 'ar' %}{{ feat_ar }}{% else %}{{ feat_en }}{% endif %}</div></div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;">
+              <input type="checkbox" {% if enabled %}checked{% endif %} style="opacity:0;width:0;height:0;">
+              <span style="position:absolute;cursor:pointer;inset:0;background:{% if enabled %}#10B981{% else %}var(--border){% endif %};transition:0.3s;border-radius:24px;"></span>
+            </label>
+          </div>
+          {% endfor %}
+          <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;"><button class="btn-primary">{% if lang == 'ar' %}حفظ{% else %}Save{% endif %}</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Default for other sections -->
+    {% for s_id in ['notifications','storage','email','api'] %}
+    <div x-show="section === '{{ s_id }}'" x-transition>
+      <div class="card" style="text-align:center;padding:3rem;">
+        <i class="fa fa-wrench" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:1rem;"></i>
+        <h3 style="font-weight:700;margin-bottom:0.5rem;">{% if lang == 'ar' %}قيد الإنشاء{% else %}Coming Soon{% endif %}</h3>
+        <p style="color:var(--text-muted);">{% if lang == 'ar' %}سيتم إضافة هذه الإعدادات قريباً{% else %}These settings will be available soon{% endif %}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

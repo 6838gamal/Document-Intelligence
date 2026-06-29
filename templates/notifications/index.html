@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}الإشعارات{% else %}Notifications{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}مركز الإشعارات{% else %}Notification Center{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{{ notifications|length }} {% if lang == 'ar' %}إشعار{% else %}notifications{% endif %}</p>
+  </div>
+  <button class="btn-secondary"><i class="fa fa-check-double"></i> {% if lang == 'ar' %}تحديد الكل كمقروء{% else %}Mark All Read{% endif %}</button>
+</div>
+
+<div style="max-width:700px;margin:0 auto;">
+  {% if notifications %}
+  <div style="display:flex;flex-direction:column;gap:0.75rem;">
+    {% for notif in notifications %}
+    <div class="card" style="border-{% if dir == 'rtl' %}right{% else %}left{% endif %}:4px solid {% if notif.type == 'danger' %}var(--danger){% elif notif.type == 'warning' %}var(--warning){% elif notif.type == 'success' %}var(--success){% else %}var(--info){% endif %};{% if not notif.is_read %}background:rgba(59,130,246,0.03);{% endif %}" x-data="{ read: {{ 'true' if notif.is_read else 'false' }} }">
+      <div style="display:flex;align-items:start;gap:1rem;">
+        <div style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:{% if notif.type == 'danger' %}rgba(239,68,68,0.1){% elif notif.type == 'warning' %}rgba(245,158,11,0.1){% elif notif.type == 'success' %}rgba(16,185,129,0.1){% else %}rgba(6,182,212,0.1){% endif %};">
+          <i class="fa fa-{% if notif.type == 'danger' %}triangle-exclamation{% elif notif.type == 'warning' %}bell{% elif notif.type == 'success' %}check-circle{% else %}circle-info{% endif %}" style="color:{% if notif.type == 'danger' %}var(--danger){% elif notif.type == 'warning' %}var(--warning){% elif notif.type == 'success' %}var(--success){% else %}var(--info){% endif %};font-size:1rem;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem;">
+            <h3 style="font-weight:700;font-size:0.9rem;">{{ notif.title }}</h3>
+            {% if not notif.is_read %}
+            <span style="width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0;"></span>
+            {% endif %}
+          </div>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:0.5rem;">{{ notif.message or '' }}</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:0.75rem;color:var(--text-muted);">{{ notif.created_at.strftime('%Y/%m/%d %H:%M') if notif.created_at else '' }}</span>
+            <div style="display:flex;gap:0.5rem;">
+              {% if notif.action_url %}
+              <a href="{{ notif.action_url }}" style="font-size:0.8rem;color:var(--accent);text-decoration:none;font-weight:600;">{% if lang == 'ar' %}عرض{% else %}View{% endif %} <i class="fa fa-arrow-{% if dir == 'rtl' %}left{% else %}right{% endif %}"></i></a>
+              {% endif %}
+              <button @click="read = true" style="font-size:0.8rem;color:var(--text-muted);background:none;border:none;cursor:pointer;">{% if lang == 'ar' %}تحديد كمقروء{% else %}Mark Read{% endif %}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:4rem;color:var(--text-muted);">
+    <i class="fa fa-bell-slash" style="font-size:3.5rem;opacity:0.3;display:block;margin-bottom:1rem;"></i>
+    <h2 style="font-weight:700;margin-bottom:0.5rem;">{% if lang == 'ar' %}لا توجد إشعارات{% else %}No Notifications{% endif %}</h2>
+    <p>{% if lang == 'ar' %}أنت محدّث تماماً!{% else %}You're all caught up!{% endif %}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

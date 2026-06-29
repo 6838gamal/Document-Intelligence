@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ dir }}" class="{{ theme }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}DocIQ - Document Intelligence Platform{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #1B2A4A; --primary-light: #243660; --accent: #3B82F6;
+      --accent-hover: #2563EB; --success: #10B981; --warning: #F59E0B;
+      --danger: #EF4444; --info: #06B6D4;
+      --bg: #F1F5F9; --surface: #FFFFFF; --card: #FFFFFF;
+      --border: #E2E8F0; --text: #1E293B; --text-muted: #64748B;
+      --sidebar-w: 260px;
+    }
+    .dark {
+      --bg: #0F172A; --surface: #1E293B; --card: #1E293B;
+      --border: #334155; --text: #F1F5F9; --text-muted: #94A3B8;
+      --primary: #1E3A5F; --primary-light: #2D4F7C;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: {% if lang == 'ar' %}'Cairo'{% else %}'Inter'{% endif %}, sans-serif;
+      background: var(--bg); color: var(--text);
+      margin: 0; padding: 0; transition: background 0.3s, color 0.3s;
+    }
+    .sidebar {
+      width: var(--sidebar-w); background: var(--primary);
+      height: 100vh; position: fixed; top: 0;
+      {% if dir == 'rtl' %}right: 0;{% else %}left: 0;{% endif %}
+      z-index: 50; transition: transform 0.3s; overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    .main-content {
+      {% if dir == 'rtl' %}margin-right: var(--sidebar-w);{% else %}margin-left: var(--sidebar-w);{% endif %}
+      min-height: 100vh; transition: margin 0.3s;
+    }
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem; height: 64px; display: flex;
+      align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 40;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .kpi-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .btn-primary {
+      background: var(--accent); color: white; border: none;
+      padding: 0.5rem 1.25rem; border-radius: 8px; cursor: pointer;
+      font-weight: 600; font-size: 0.875rem; transition: 0.2s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-secondary {
+      background: transparent; color: var(--text); border: 1px solid var(--border);
+      padding: 0.5rem 1.25rem; border-radius: 8px; cursor: pointer;
+      font-weight: 500; font-size: 0.875rem; transition: 0.2s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-secondary:hover { background: var(--bg); }
+    .badge {
+      display: inline-flex; align-items: center; padding: 0.2rem 0.6rem;
+      border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+    }
+    .badge-success { background: #D1FAE5; color: #065F46; }
+    .badge-warning { background: #FEF3C7; color: #92400E; }
+    .badge-danger { background: #FEE2E2; color: #991B1B; }
+    .badge-info { background: #E0F2FE; color: #075985; }
+    .badge-gray { background: #F1F5F9; color: #475569; }
+    .dark .badge-success { background: #064E3B; color: #6EE7B7; }
+    .dark .badge-warning { background: #78350F; color: #FCD34D; }
+    .dark .badge-danger { background: #7F1D1D; color: #FCA5A5; }
+    .dark .badge-info { background: #0C4A6E; color: #7DD3FC; }
+    .dark .badge-gray { background: #334155; color: #CBD5E1; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.6rem 1.25rem; color: rgba(255,255,255,0.75);
+      text-decoration: none; font-size: 0.875rem; font-weight: 500;
+      transition: 0.15s; border-radius: 8px; margin: 1px 0.75rem;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(255,255,255,0.12); color: white;
+    }
+    .nav-item.active { background: rgba(59,130,246,0.3); color: white; }
+    .nav-group-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: rgba(255,255,255,0.35);
+      padding: 0.75rem 1.5rem 0.25rem;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: {% if dir == 'rtl' %}right{% else %}left{% endif %};
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--text-muted);
+      padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 0.875rem 1rem; border-bottom: 1px solid var(--border);
+      font-size: 0.875rem; color: var(--text);
+    }
+    tr:hover td { background: var(--bg); }
+    input, select, textarea {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.5rem 0.875rem; color: var(--text);
+      font-size: 0.875rem; width: 100%; outline: none; transition: 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    .stat-up { color: var(--success); }
+    .stat-down { color: var(--danger); }
+    .sidebar-logo {
+      padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .logo-icon {
+      width: 38px; height: 38px; background: var(--accent);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: white;
+    }
+    .progress-bar {
+      height: 6px; background: var(--border); border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s;
+    }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX({% if dir == 'rtl' %}100%{% else %}-100%{% endif %}); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin: 0 !important; }
+    }
+    .animate-pulse-slow { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .tooltip { position: relative; }
+    .tooltip::after {
+      content: attr(data-tip); position: absolute; bottom: 120%;
+      {% if dir == 'rtl' %}right: 0;{% else %}left: 0;{% endif %}
+      background: #1E293B; color: white; padding: 0.3rem 0.6rem;
+      border-radius: 6px; font-size: 0.75rem; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: 0.2s; z-index: 100;
+    }
+    .tooltip:hover::after { opacity: 1; }
+    .search-input {
+      background: var(--bg) !important; border: 1px solid var(--border) !important;
+      padding: 0.5rem 2.5rem !important; border-radius: 8px; width: 280px;
+    }
+    .dark-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 45; display: none; }
+    .dark-overlay.show { display: block; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body x-data="{ sidebarOpen: false, notifOpen: false, userOpen: false }" @click.outside="notifOpen = false; userOpen = false">
+
+<!-- Mobile Overlay -->
+<div class="dark-overlay" :class="{ 'show': sidebarOpen }" @click="sidebarOpen = false"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" :class="{ 'open': sidebarOpen }">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fa fa-brain"></i></div>
+    <div>
+      <div style="color:white;font-weight:800;font-size:1rem;line-height:1.1;">DocIQ</div>
+      <div style="color:rgba(255,255,255,0.45);font-size:0.7rem;">{% if lang == 'ar' %}ذكاء المستندات{% else %}Document Intelligence{% endif %}</div>
+    </div>
+  </div>
+
+  <nav style="padding: 0.5rem 0 2rem;">
+    <a href="/dashboard" class="nav-item {% if request.url.path == '/dashboard' %}active{% endif %}">
+      <i class="fa fa-chart-pie" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}لوحة التحكم{% else %}Dashboard{% endif %}
+    </a>
+
+    <div class="nav-group-label">{% if lang == 'ar' %}المستندات{% else %}Documents{% endif %}</div>
+    <a href="/documents" class="nav-item {% if '/documents' in request.url.path and '/upload' not in request.url.path and '/review' not in request.url.path %}active{% endif %}">
+      <i class="fa fa-file-lines" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}المستندات{% else %}Documents{% endif %}
+    </a>
+    <a href="/documents/upload" class="nav-item {% if '/upload' in request.url.path %}active{% endif %}">
+      <i class="fa fa-cloud-arrow-up" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}رفع مستند{% else %}Upload{% endif %}
+    </a>
+    <a href="/approvals" class="nav-item {% if '/approvals' in request.url.path %}active{% endif %}">
+      <i class="fa fa-circle-check" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}الاعتمادات{% else %}Approvals{% endif %}
+    </a>
+
+    <div class="nav-group-label">{% if lang == 'ar' %}العمليات{% else %}Operations{% endif %}</div>
+    <a href="/workflows" class="nav-item {% if '/workflows' in request.url.path %}active{% endif %}">
+      <i class="fa fa-diagram-project" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}مسارات العمل{% else %}Workflows{% endif %}
+    </a>
+    <a href="/projects" class="nav-item {% if '/projects' in request.url.path %}active{% endif %}">
+      <i class="fa fa-folder-open" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}المشاريع{% else %}Projects{% endif %}
+    </a>
+    <a href="/vendors" class="nav-item {% if '/vendors' in request.url.path %}active{% endif %}">
+      <i class="fa fa-truck" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}الموردون{% else %}Vendors{% endif %}
+    </a>
+    <a href="/customers" class="nav-item {% if '/customers' in request.url.path %}active{% endif %}">
+      <i class="fa fa-users" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}العملاء{% else %}Customers{% endif %}
+    </a>
+
+    <div class="nav-group-label">{% if lang == 'ar' %}الذكاء الاصطناعي{% else %}AI & Knowledge{% endif %}</div>
+    <a href="/search" class="nav-item {% if '/search' in request.url.path %}active{% endif %}">
+      <i class="fa fa-magnifying-glass-chart" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}البحث الذكي{% else %}Smart Search{% endif %}
+    </a>
+    <a href="/knowledge" class="nav-item {% if '/knowledge' in request.url.path %}active{% endif %}">
+      <i class="fa fa-book-open" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}قاعدة المعرفة{% else %}Knowledge Base{% endif %}
+    </a>
+    <a href="/agents" class="nav-item {% if '/agents' in request.url.path %}active{% endif %}">
+      <i class="fa fa-robot" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}وكلاء AI{% else %}AI Agents{% endif %}
+    </a>
+
+    <div class="nav-group-label">{% if lang == 'ar' %}التحليلات{% else %}Analytics{% endif %}</div>
+    <a href="/reports" class="nav-item {% if '/reports' in request.url.path %}active{% endif %}">
+      <i class="fa fa-chart-bar" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}التقارير{% else %}Reports{% endif %}
+    </a>
+    <a href="/notifications" class="nav-item {% if '/notifications' in request.url.path %}active{% endif %}">
+      <i class="fa fa-bell" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}الإشعارات{% else %}Notifications{% endif %}
+    </a>
+
+    <div class="nav-group-label">{% if lang == 'ar' %}الإدارة{% else %}Administration{% endif %}</div>
+    <a href="/users" class="nav-item {% if '/users' in request.url.path and '/roles' not in request.url.path %}active{% endif %}">
+      <i class="fa fa-user-gear" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}إدارة المستخدمين{% else %}User Management{% endif %}
+    </a>
+    <a href="/users/roles" class="nav-item {% if '/roles' in request.url.path %}active{% endif %}">
+      <i class="fa fa-shield-halved" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}الأدوار والصلاحيات{% else %}Roles & Permissions{% endif %}
+    </a>
+    <a href="/audit" class="nav-item {% if '/audit' in request.url.path %}active{% endif %}">
+      <i class="fa fa-clipboard-list" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}سجل المراجعة{% else %}Audit Trail{% endif %}
+    </a>
+    <a href="/integrations" class="nav-item {% if '/integrations' in request.url.path %}active{% endif %}">
+      <i class="fa fa-plug" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}التكاملات{% else %}Integrations{% endif %}
+    </a>
+    <a href="/settings" class="nav-item {% if '/settings' in request.url.path %}active{% endif %}">
+      <i class="fa fa-gear" style="width:16px;text-align:center;"></i>
+      {% if lang == 'ar' %}الإعدادات{% else %}Settings{% endif %}
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <button @click="sidebarOpen = !sidebarOpen" style="display:none;background:none;border:none;cursor:pointer;color:var(--text);font-size:1.25rem;" class="mobile-menu-btn">
+        <i class="fa fa-bars"></i>
+      </button>
+      <div style="position:relative;">
+        <i class="fa fa-magnifying-glass" style="position:absolute;{% if dir == 'rtl' %}right:0.75rem;{% else %}left:0.75rem;{% endif %}top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.875rem;"></i>
+        <input type="text" class="search-input" placeholder="{% if lang == 'ar' %}بحث ذكي...{% else %}Smart search...{% endif %}"
+          onkeydown="if(event.key==='Enter')window.location='/search?q='+this.value" />
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <!-- Lang Toggle -->
+      <form method="POST" action="/auth/set-lang" style="margin:0;">
+        <input type="hidden" name="lang" value="{% if lang == 'ar' %}en{% else %}ar{% endif %}" />
+        <button type="submit" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.75rem;cursor:pointer;color:var(--text);font-size:0.8rem;font-weight:600;">
+          {% if lang == 'ar' %}EN{% else %}عربي{% endif %}
+        </button>
+      </form>
+      <!-- Theme Toggle -->
+      <form method="POST" action="/auth/set-theme" style="margin:0;">
+        <input type="hidden" name="theme" value="{% if theme == 'light' %}dark{% else %}light{% endif %}" />
+        <button type="submit" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.75rem;cursor:pointer;color:var(--text);font-size:0.875rem;">
+          {% if theme == 'light' %}<i class="fa fa-moon"></i>{% else %}<i class="fa fa-sun"></i>{% endif %}
+        </button>
+      </form>
+      <!-- Notifications -->
+      <div style="position:relative;">
+        <button @click="notifOpen = !notifOpen" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.75rem;cursor:pointer;color:var(--text);font-size:0.875rem;position:relative;">
+          <i class="fa fa-bell"></i>
+          <span style="position:absolute;top:-4px;{% if dir == 'rtl' %}left:-4px;{% else %}right:-4px;{% endif %}background:var(--danger);color:white;border-radius:50%;width:16px;height:16px;font-size:0.65rem;display:flex;align-items:center;justify-content:center;font-weight:700;">3</span>
+        </button>
+        <div x-show="notifOpen" x-transition style="position:absolute;{% if dir == 'rtl' %}left:0;{% else %}right:0;{% endif %}top:calc(100% + 8px);width:320px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);z-index:100;overflow:hidden;">
+          <div style="padding:0.875rem 1rem;border-bottom:1px solid var(--border);font-weight:700;">{% if lang == 'ar' %}الإشعارات{% else %}Notifications{% endif %}</div>
+          <div style="padding:0.5rem 0;">
+            <a href="/approvals" style="display:flex;gap:0.75rem;padding:0.75rem 1rem;text-decoration:none;color:var(--text);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+              <div style="width:36px;height:36px;background:#FEF3C7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-triangle-exclamation" style="color:#D97706;font-size:0.875rem;"></i></div>
+              <div><div style="font-weight:600;font-size:0.875rem;">{% if lang == 'ar' %}طلب اعتماد جديد{% else %}New Approval Request{% endif %}</div><div style="font-size:0.75rem;color:var(--text-muted);">{% if lang == 'ar' %}منذ 10 دقائق{% else %}10 minutes ago{% endif %}</div></div>
+            </a>
+            <a href="/documents" style="display:flex;gap:0.75rem;padding:0.75rem 1rem;text-decoration:none;color:var(--text);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+              <div style="width:36px;height:36px;background:#D1FAE5;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-check" style="color:#059669;font-size:0.875rem;"></i></div>
+              <div><div style="font-weight:600;font-size:0.875rem;">{% if lang == 'ar' %}تمت معالجة المستند{% else %}Document Processed{% endif %}</div><div style="font-size:0.75rem;color:var(--text-muted);">{% if lang == 'ar' %}منذ ساعة{% else %}1 hour ago{% endif %}</div></div>
+            </a>
+          </div>
+          <div style="padding:0.5rem 1rem;border-top:1px solid var(--border);">
+            <a href="/notifications" style="color:var(--accent);font-size:0.875rem;font-weight:600;text-decoration:none;">{% if lang == 'ar' %}عرض الكل{% else %}View All{% endif %}</a>
+          </div>
+        </div>
+      </div>
+      <!-- User Menu -->
+      <div style="position:relative;">
+        <button @click="userOpen = !userOpen" style="display:flex;align-items:center;gap:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.875rem;cursor:pointer;">
+          <div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">{% if user %}{{ user.name[0] }}{% else %}A{% endif %}</div>
+          <span style="font-size:0.875rem;font-weight:600;color:var(--text);">{% if user %}{{ user.name.split()[0] }}{% else %}Admin{% endif %}</span>
+          <i class="fa fa-chevron-down" style="font-size:0.65rem;color:var(--text-muted);"></i>
+        </button>
+        <div x-show="userOpen" x-transition style="position:absolute;{% if dir == 'rtl' %}left:0;{% else %}right:0;{% endif %}top:calc(100% + 8px);width:200px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);z-index:100;overflow:hidden;">
+          <div style="padding:0.875rem;border-bottom:1px solid var(--border);">
+            <div style="font-weight:700;font-size:0.875rem;">{% if user %}{{ user.name }}{% endif %}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">{% if user %}{{ user.email }}{% endif %}</div>
+          </div>
+          <a href="/settings" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;color:var(--text);text-decoration:none;font-size:0.875rem;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''"><i class="fa fa-gear" style="width:16px;"></i> {% if lang == 'ar' %}الإعدادات{% else %}Settings{% endif %}</a>
+          <a href="/auth/logout" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;color:var(--danger);text-decoration:none;font-size:0.875rem;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''"><i class="fa fa-right-from-bracket" style="width:16px;"></i> {% if lang == 'ar' %}تسجيل الخروج{% else %}Logout{% endif %}</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main style="padding: 1.5rem;">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<style>
+  @media (max-width: 768px) { .mobile-menu-btn { display: flex !important; } .search-input { width: 160px !important; } }
+</style>
+<script>
+  document.querySelectorAll('[data-stat]').forEach(el => {
+    const target = parseInt(el.dataset.stat);
+    let current = 0;
+    const step = Math.ceil(target / 40);
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = current.toLocaleString('{% if lang == "ar" %}ar-SA{% else %}en-US{% endif %}');
+      if (current >= target) clearInterval(timer);
+    }, 30);
+  });
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

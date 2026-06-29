@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}المستندات{% else %}Documents{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}إدارة المستندات{% else %}Document Management{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{{ total }} {% if lang == 'ar' %}مستند{% else %}documents{% endif %}</p>
+  </div>
+  <a href="/documents/upload" class="btn-primary"><i class="fa fa-cloud-arrow-up"></i> {% if lang == 'ar' %}رفع مستند{% else %}Upload Document{% endif %}</a>
+</div>
+
+<!-- FILTERS -->
+<div class="card" style="margin-bottom:1rem;padding:1rem 1.25rem;">
+  <form method="GET" action="/documents" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <div style="flex:1;min-width:200px;">
+      <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}بحث{% else %}Search{% endif %}</label>
+      <input type="text" name="search" value="{{ search or '' }}" placeholder="{% if lang == 'ar' %}عنوان المستند...{% else %}Document title...{% endif %}" />
+    </div>
+    <div style="min-width:160px;">
+      <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}الحالة{% else %}Status{% endif %}</label>
+      <select name="status">
+        <option value="">{% if lang == 'ar' %}الكل{% else %}All{% endif %}</option>
+        {% for s in statuses %}<option value="{{ s }}" {% if s == filter_status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </div>
+    <div style="min-width:160px;">
+      <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}الفئة{% else %}Category{% endif %}</label>
+      <select name="category">
+        <option value="">{% if lang == 'ar' %}الكل{% else %}All{% endif %}</option>
+        {% for c in categories %}<option value="{{ c }}" {% if c == filter_category %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn-primary"><i class="fa fa-filter"></i> {% if lang == 'ar' %}تصفية{% else %}Filter{% endif %}</button>
+    <a href="/documents" class="btn-secondary"><i class="fa fa-xmark"></i> {% if lang == 'ar' %}مسح{% else %}Clear{% endif %}</a>
+  </form>
+</div>
+
+<!-- TABLE -->
+<div class="card" style="padding:0;overflow:hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>{% if lang == 'ar' %}المستند{% else %}Document{% endif %}</th>
+        <th>{% if lang == 'ar' %}الفئة{% else %}Category{% endif %}</th>
+        <th>{% if lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+        <th>{% if lang == 'ar' %}ثقة AI{% else %}AI Confidence{% endif %}</th>
+        <th>{% if lang == 'ar' %}الرافع{% else %}Uploaded By{% endif %}</th>
+        <th>{% if lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+        <th>{% if lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for doc in documents %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,0.08);flex-shrink:0;">
+              <i class="fa fa-{% if doc.file_type == 'PDF' %}file-pdf{% elif doc.file_type == 'XLSX' %}file-excel{% else %}file-word{% endif %}" style="color:{% if doc.file_type == 'PDF' %}#EF4444{% elif doc.file_type == 'XLSX' %}#10B981{% else %}#3B82F6{% endif %};"></i>
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:0.875rem;">{{ doc.title[:45] }}{% if doc.title|length > 45 %}...{% endif %}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);">{{ doc.file_type }} · {{ (doc.file_size / 1024)|round(1) }} KB</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge badge-gray">{{ doc.category or '—' }}</span></td>
+        <td>
+          {% if doc.status == 'approved' %}<span class="badge badge-success">{% if lang == 'ar' %}معتمد{% else %}Approved{% endif %}</span>
+          {% elif doc.status == 'pending_approval' %}<span class="badge badge-warning">{% if lang == 'ar' %}انتظار الاعتماد{% else %}Pending Approval{% endif %}</span>
+          {% elif doc.status == 'processing' %}<span class="badge badge-info">{% if lang == 'ar' %}معالجة{% else %}Processing{% endif %}</span>
+          {% elif doc.status == 'reviewed' %}<span class="badge badge-info">{% if lang == 'ar' %}مراجع{% else %}Reviewed{% endif %}</span>
+          {% elif doc.status == 'rejected' %}<span class="badge badge-danger">{% if lang == 'ar' %}مرفوض{% else %}Rejected{% endif %}</span>
+          {% else %}<span class="badge badge-gray">{{ doc.status }}</span>{% endif %}
+        </td>
+        <td>
+          {% if doc.confidence_score > 0 %}
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <div class="progress-bar" style="width:60px;"><div class="progress-fill" style="width:{{ doc.confidence_score }}%;background:{% if doc.confidence_score > 90 %}var(--success){% elif doc.confidence_score > 70 %}var(--warning){% else %}var(--danger){% endif %};"></div></div>
+            <span style="font-size:0.8rem;font-weight:700;">{{ doc.confidence_score }}%</span>
+          </div>
+          {% else %}
+          <span style="color:var(--text-muted);font-size:0.8rem;">—</span>
+          {% endif %}
+        </td>
+        <td style="font-size:0.875rem;">{{ doc.uploader.name if doc.uploader else '—' }}</td>
+        <td style="font-size:0.8rem;color:var(--text-muted);">{{ doc.created_at.strftime('%Y/%m/%d') if doc.created_at else '—' }}</td>
+        <td>
+          <div style="display:flex;gap:0.5rem;">
+            <a href="/documents/{{ doc.id }}" style="padding:0.3rem 0.6rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:0.8rem;text-decoration:none;color:var(--text);" title="{% if lang == 'ar' %}عرض{% else %}View{% endif %}"><i class="fa fa-eye"></i></a>
+            <a href="/documents/{{ doc.id }}/review" style="padding:0.3rem 0.6rem;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:6px;font-size:0.8rem;text-decoration:none;color:#3B82F6;" title="{% if lang == 'ar' %}مراجعة AI{% else %}AI Review{% endif %}"><i class="fa fa-robot"></i></a>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">
+        <i class="fa fa-file-circle-xmark" style="font-size:2.5rem;display:block;margin-bottom:0.75rem;opacity:0.4;"></i>
+        {% if lang == 'ar' %}لا توجد مستندات{% else %}No documents found{% endif %}
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if pages > 1 %}
+  <div style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);">
+    <span style="font-size:0.875rem;color:var(--text-muted);">{% if lang == 'ar' %}صفحة{% else %}Page{% endif %} {{ page }} {% if lang == 'ar' %}من{% else %}of{% endif %} {{ pages }}</span>
+    <div style="display:flex;gap:0.5rem;">
+      {% if page > 1 %}<a href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}" class="btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.8rem;"><i class="fa fa-chevron-{% if dir == 'rtl' %}right{% else %}left{% endif %}"></i></a>{% endif %}
+      {% if page < pages %}<a href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}" class="btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.8rem;"><i class="fa fa-chevron-{% if dir == 'rtl' %}left{% else %}right{% endif %}"></i></a>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

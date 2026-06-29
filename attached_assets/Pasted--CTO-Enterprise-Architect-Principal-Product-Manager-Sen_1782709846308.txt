@@ -1,0 +1,664 @@
+أنت فريق متكامل مكوّن من:
+
+* CTO
+* Enterprise Architect
+* Principal Product Manager
+* Senior UX Architect
+* Lead Python Engineer
+* FastAPI Expert
+* PostgreSQL Expert
+* AI Architect
+* RAG Architect
+* DevOps Engineer
+* Docker Architect
+* Security Architect
+
+مهمتك تصميم مشروع SaaS مؤسسي كامل وقابل للتنفيذ والإطلاق التجاري الفعلي.
+
+اسم المشروع:
+
+Document Intelligence & Workflow Automation Platform
+
+━━━━━━━━━━━━━━━━━━━━
+MISSION
+━━━━━━━━━━━━━━━━━━━━
+
+أريد بناء منصة مؤسسية متكاملة لإدارة المستندات والعمليات التشغيلية باستخدام الذكاء الاصطناعي.
+
+المنصة يجب أن تجمع بين:
+
+* Document Management
+* OCR
+* Document Classification
+* Data Extraction
+* Workflow Automation
+* Approvals Management
+* Audit Trail
+* Knowledge Base
+* Enterprise Search
+* RAG
+* AI Agents
+* Analytics
+* Multi-Tenant SaaS
+
+ويجب أن تكون جاهزة للاستخدام في:
+
+* المقاولات
+* الخدمات المهنية
+* اللوجستيات
+* المؤسسات المالية
+* إدارة المشاريع
+
+━━━━━━━━━━━━━━━━━━━━
+TECHNICAL CONSTRAINTS
+━━━━━━━━━━━━━━━━━━━━
+
+اعتمد حصراً:
+
+Python 3.13+
+
+FastAPI
+
+Jinja2
+
+HTMX
+
+Alpine.js
+
+TailwindCSS
+
+PostgreSQL
+
+pgvector
+
+Redis
+
+Celery
+
+MinIO
+
+SQLAlchemy 2.0
+
+Alembic
+
+Pydantic v2
+
+Docker
+
+Docker Compose
+
+LangGraph
+
+PaddleOCR
+
+JWT
+
+RBAC
+
+Architecture Style:
+
+Modular Monolith
+
+ممنوع:
+
+* Microservices في الإصدار الأول
+* Kubernetes
+* React
+* Next.js
+* Node.js Backend
+* NestJS
+* Laravel
+
+━━━━━━━━━━━━━━━━━━━━
+PROJECT GOALS
+━━━━━━━━━━━━━━━━━━━━
+
+يجب أن يكون المشروع:
+
+Enterprise Grade
+
+Production Ready
+
+Cloud Ready
+
+Self Hosted Ready
+
+Mobile Responsive
+
+RTL Ready
+
+LTR Ready
+
+Dark Mode Ready
+
+Light Mode Ready
+
+Multi-Tenant Ready
+
+API First
+
+Docker First
+
+AI Native
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #1
+PRODUCT DEFINITION
+━━━━━━━━━━━━━━━━━━━━
+
+أنشئ:
+
+* Product Vision
+* Product Positioning
+* Value Proposition
+* Competitive Advantage
+* Target Personas
+* Business Use Cases
+* Revenue Opportunities
+* Expansion Strategy
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #2
+INFORMATION ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━
+
+أنشئ:
+
+Navigation Tree كاملة
+
+User Journeys
+
+Role Matrix
+
+Permission Matrix
+
+Page Hierarchy
+
+Breadcrumb Structure
+
+Screen Relationships
+
+حدد جميع الشاشات المطلوبة.
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #3
+UI / UX DESIGN
+━━━━━━━━━━━━━━━━━━━━
+
+صمم جميع الشاشات.
+
+لكل شاشة:
+
+* الهدف
+* المستخدم المستهدف
+* Layout
+* Grid
+* Components
+* Buttons
+* Tables
+* Filters
+* Cards
+* Charts
+* Drawers
+* Modals
+* User Actions
+
+اشرح ترتيب العناصر من الأعلى للأسفل.
+
+━━━━━━━━━━━━━━━━━━━━
+SCREENS
+━━━━━━━━━━━━━━━━━━━━
+
+1. Login
+
+2. Dashboard
+
+3. Documents List
+
+4. Upload Documents
+
+5. Document Details
+
+6. AI Review
+
+7. Validation Screen
+
+8. Approvals Inbox
+
+9. Workflow Builder
+
+10. Knowledge Base
+
+11. Smart Search
+
+12. AI Search Results
+
+13. Reports
+
+14. Notifications
+
+15. Projects
+
+16. Vendors
+
+17. Customers
+
+18. AI Agents Center
+
+19. User Management
+
+20. Roles & Permissions
+
+21. Audit Trail
+
+22. Integrations
+
+23. Settings
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #4
+RESPONSIVE DESIGN
+━━━━━━━━━━━━━━━━━━━━
+
+صمم لكل شاشة:
+
+320px
+
+360px
+
+390px
+
+768px
+
+1280px
+
+1440px
+
+1920px
+
+اشرح:
+
+* Mobile Layout
+* Tablet Layout
+* Desktop Layout
+
+وكيف تتغير المكونات.
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #5
+RTL / LTR
+━━━━━━━━━━━━━━━━━━━━
+
+حدد:
+
+* Mirroring Rules
+* Tables
+* Menus
+* Forms
+* Breadcrumbs
+* Charts
+* Icons
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #6
+LIGHT & DARK MODE
+━━━━━━━━━━━━━━━━━━━━
+
+أنشئ Design System كاملة.
+
+حدد:
+
+Typography
+
+Spacing
+
+Radius
+
+Elevation
+
+Animations
+
+Color Tokens
+
+Light Theme
+
+Dark Theme
+
+مع أكواد HEX كاملة.
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #7
+DATABASE DESIGN
+━━━━━━━━━━━━━━━━━━━━
+
+أنشئ:
+
+ERD كامل
+
+Tables
+
+Relationships
+
+Indexes
+
+Constraints
+
+Tenant Isolation
+
+Soft Delete
+
+Versioning
+
+Audit Strategy
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #8
+PROJECT STRUCTURE
+━━━━━━━━━━━━━━━━━━━━
+
+أنشئ هيكل المشروع كاملاً.
+
+يشمل:
+
+app/
+
+core/
+
+modules/
+
+auth/
+
+documents/
+
+workflows/
+
+approvals/
+
+knowledge/
+
+search/
+
+agents/
+
+analytics/
+
+audit/
+
+notifications/
+
+integrations/
+
+settings/
+
+templates/
+
+static/
+
+workers/
+
+tests/
+
+docker/
+
+scripts/
+
+migrations/
+
+حدد وظيفة كل مجلد.
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #9
+DOCUMENT AI PIPELINE
+━━━━━━━━━━━━━━━━━━━━
+
+صمم Pipeline كاملة:
+
+Upload
+
+Storage
+
+OCR
+
+Classification
+
+Extraction
+
+Validation
+
+Approval Routing
+
+Embedding
+
+Indexing
+
+Knowledge Linking
+
+Search Availability
+
+Audit Logging
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #10
+WORKFLOW ENGINE
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Workflow Definitions
+
+Nodes
+
+Transitions
+
+Conditions
+
+Approvals
+
+Escalations
+
+SLA
+
+Notifications
+
+Retries
+
+Timers
+
+Audit Tracking
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #11
+RAG SYSTEM
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Chunking
+
+Embedding
+
+Vector Storage
+
+Hybrid Search
+
+Re-ranking
+
+Permission Filtering
+
+Source Citations
+
+Knowledge Collections
+
+Tenant Isolation
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #12
+AI AGENTS
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Document Agent
+
+Approval Agent
+
+Search Agent
+
+Analytics Agent
+
+Compliance Agent
+
+Knowledge Agent
+
+حدد:
+
+Responsibilities
+
+Tools
+
+Memory
+
+Permissions
+
+Execution Flow
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #13
+DOCKER ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━
+
+صمم Docker Architecture كاملة.
+
+يشمل:
+
+FastAPI Container
+
+PostgreSQL Container
+
+Redis Container
+
+MinIO Container
+
+Celery Worker
+
+Celery Beat
+
+Nginx
+
+Monitoring
+
+Logging
+
+حدد:
+
+Networks
+
+Volumes
+
+Dependencies
+
+Health Checks
+
+Restart Policies
+
+Resource Requirements
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #14
+OBSERVABILITY
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Logging
+
+Monitoring
+
+Metrics
+
+Tracing
+
+Background Jobs Monitoring
+
+AI Monitoring
+
+Audit Monitoring
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #15
+BACKUP & RECOVERY
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Database Backups
+
+File Backups
+
+MinIO Backups
+
+Configuration Backups
+
+Restore Procedures
+
+Disaster Recovery
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #16
+SECURITY
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+RBAC
+
+JWT
+
+Tenant Isolation
+
+Secrets Management
+
+File Security
+
+Encryption
+
+Rate Limiting
+
+Audit Logging
+
+━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE #17
+CI/CD
+━━━━━━━━━━━━━━━━━━━━
+
+صمم:
+
+Git Strategy
+
+Branches
+
+Testing Pipeline
+
+Docker Build Pipeline
+
+Release Strategy
+
+Rollback Strategy
+
+Production Deployment
+
+━━━━━━━━━━━━━━━━━━━━
+FINAL OUTPUT RULES
+━━━━━━━━━━━━━━━━━━━━
+
+ممنوع إعطاء وصف عام.
+
+ممنوع الاختصار.
+
+ممنوع اقتراح أكثر من خيار.
+
+اتخذ قراراً واحداً نهائياً في كل نقطة.
+
+قدّم النتيجة كوثيقة تنفيذية جاهزة لفريق التطوير.
+
+اعمل وكأن المشروع سيدخل التطوير والإنتاج التجاري غداً.

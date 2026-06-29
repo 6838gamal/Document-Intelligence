@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}إدارة المستخدمين{% else %}User Management{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}إدارة المستخدمين{% else %}User Management{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{{ users|length }} {% if lang == 'ar' %}مستخدم{% else %}users{% endif %}</p>
+  </div>
+  <div style="display:flex;gap:0.75rem;">
+    <button class="btn-secondary"><i class="fa fa-file-import"></i> {% if lang == 'ar' %}استيراد{% else %}Import{% endif %}</button>
+    <button class="btn-primary" onclick="document.getElementById('addUserModal').style.display='flex'"><i class="fa fa-user-plus"></i> {% if lang == 'ar' %}إضافة مستخدم{% else %}Add User{% endif %}</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
+  {% for label_ar, label_en, val, color in [
+    ('إجمالي المستخدمين','Total Users', users|length, '#3B82F6'),
+    ('المستخدمون النشطون','Active Users', users|selectattr('is_active')|list|length, '#10B981'),
+    ('المديرون','Managers', users|selectattr('role','in',['admin','manager','super_admin'])|list|length, '#8B5CF6'),
+    ('المراجعون','Reviewers', users|selectattr('role','eq','reviewer')|list|length, '#F59E0B')
+  ] %}
+  <div class="kpi-card">
+    <p style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}{{ label_ar }}{% else %}{{ label_en }}{% endif %}</p>
+    <h2 style="font-size:1.75rem;font-weight:900;color:{{ color }};">{{ val }}</h2>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  <div style="padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid var(--border);">
+    <div style="position:relative;flex:1;">
+      <i class="fa fa-magnifying-glass" style="position:absolute;{% if dir == 'rtl' %}right:0.875rem;{% else %}left:0.875rem;{% endif %}top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.875rem;"></i>
+      <input type="text" placeholder="{% if lang == 'ar' %}بحث عن مستخدم...{% else %}Search users...{% endif %}" style="{% if dir == 'rtl' %}padding-right:2.5rem;{% else %}padding-left:2.5rem;{% endif %}" />
+    </div>
+    <select style="width:160px;">
+      <option>{% if lang == 'ar' %}كل الأدوار{% else %}All Roles{% endif %}</option>
+      <option>Super Admin</option><option>Admin</option><option>Manager</option><option>Reviewer</option><option>Viewer</option>
+    </select>
+    <select style="width:140px;">
+      <option>{% if lang == 'ar' %}كل الأقسام{% else %}All Depts{% endif %}</option>
+    </select>
+  </div>
+  <table>
+    <thead><tr>
+      <th>{% if lang == 'ar' %}المستخدم{% else %}User{% endif %}</th>
+      <th>{% if lang == 'ar' %}القسم{% else %}Department{% endif %}</th>
+      <th>{% if lang == 'ar' %}الدور{% else %}Role{% endif %}</th>
+      <th>{% if lang == 'ar' %}اللغة{% else %}Language{% endif %}</th>
+      <th>{% if lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+      <th>{% if lang == 'ar' %}تاريخ الإنشاء{% else %}Created{% endif %}</th>
+      <th>{% if lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+    </tr></thead>
+    <tbody>
+    {% for u in users %}
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#8B5CF6);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.875rem;flex-shrink:0;">{{ u.name[0] }}</div>
+          <div>
+            <div style="font-weight:700;font-size:0.875rem;">{{ u.name }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">{{ u.email }}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:0.875rem;">{{ u.department or '—' }}</td>
+      <td>
+        {% set role_colors = {'super_admin': 'danger', 'admin': 'danger', 'manager': 'info', 'reviewer': 'warning', 'viewer': 'gray'} %}
+        <span class="badge badge-{{ role_colors.get(u.role, 'gray') }}">{{ u.role }}</span>
+      </td>
+      <td style="font-size:0.875rem;">{% if u.language == 'ar' %}<i class="fa fa-globe" style="margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.4rem;"></i>عربي{% else %}English{% endif %}</td>
+      <td>
+        {% if u.is_active %}<span class="badge badge-success">{% if lang == 'ar' %}نشط{% else %}Active{% endif %}</span>
+        {% else %}<span class="badge badge-gray">{% if lang == 'ar' %}غير نشط{% else %}Inactive{% endif %}</span>{% endif %}
+      </td>
+      <td style="font-size:0.8rem;color:var(--text-muted);">{{ u.created_at.strftime('%Y/%m/%d') if u.created_at else '—' }}</td>
+      <td>
+        <div style="display:flex;gap:0.4rem;">
+          <button style="padding:0.3rem 0.6rem;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:0.8rem;color:var(--text);"><i class="fa fa-pencil"></i></button>
+          <button style="padding:0.3rem 0.6rem;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:0.8rem;color:var(--text);"><i class="fa fa-key"></i></button>
+          <button style="padding:0.3rem 0.6rem;border-radius:6px;border:1px solid rgba(239,68,68,0.3);background:transparent;cursor:pointer;font-size:0.8rem;color:var(--danger);"><i class="fa fa-ban"></i></button>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ADD USER MODAL -->
+<div id="addUserModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border-radius:16px;padding:2rem;width:480px;max-width:90vw;box-shadow:0 25px 60px rgba(0,0,0,0.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <h2 style="font-weight:800;">{% if lang == 'ar' %}إضافة مستخدم جديد{% else %}Add New User{% endif %}</h2>
+      <button onclick="document.getElementById('addUserModal').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--text-muted);"><i class="fa fa-xmark"></i></button>
+    </div>
+    <div style="display:grid;gap:1rem;">
+      <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}</label><input type="text" placeholder="{% if lang == 'ar' %}أدخل الاسم الكامل{% else %}Enter full name{% endif %}" /></div>
+      <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</label><input type="email" placeholder="user@company.com" /></div>
+      <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}الدور{% else %}Role{% endif %}</label><select><option>Manager</option><option>Reviewer</option><option>Viewer</option></select></div>
+      <div><label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}القسم{% else %}Department{% endif %}</label><input type="text" /></div>
+      <div style="display:flex;gap:0.75rem;justify-content:flex-end;padding-top:0.5rem;border-top:1px solid var(--border);">
+        <button onclick="document.getElementById('addUserModal').style.display='none'" class="btn-secondary">{% if lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</button>
+        <button class="btn-primary">{% if lang == 'ar' %}إضافة{% else %}Add User{% endif %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

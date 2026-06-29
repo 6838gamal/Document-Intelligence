@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}الموردون{% else %}Vendors{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}إدارة الموردين{% else %}Vendor Management{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{{ vendors|length }} {% if lang == 'ar' %}موردين{% else %}vendors{% endif %}</p>
+  </div>
+  <button class="btn-primary"><i class="fa fa-plus"></i> {% if lang == 'ar' %}مورد جديد{% else %}New Vendor{% endif %}</button>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
+  {% for label_ar, label_en, val, color in [
+    ('إجمالي الموردين','Total Vendors', vendors|length, '#3B82F6'),
+    ('النشطون','Active', vendors|selectattr('status','eq','active')|list|length, '#10B981'),
+    ('إجمالي العقود','Total Contracts', vendors|sum(attribute='contract_count')|int, '#8B5CF6'),
+    ('متوسط التقييم','Avg Rating', '4.4 ★', '#F59E0B')
+  ] %}
+  <div class="kpi-card"><p style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.5rem;">{% if lang == 'ar' %}{{ label_ar }}{% else %}{{ label_en }}{% endif %}</p><h2 style="font-size:1.75rem;font-weight:900;color:{{ color }};">{{ val }}</h2></div>
+  {% endfor %}
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  <div style="padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid var(--border);">
+    <input type="text" placeholder="{% if lang == 'ar' %}بحث...{% else %}Search...{% endif %}" style="max-width:240px;" />
+    <select style="width:160px;"><option>{% if lang == 'ar' %}كل الفئات{% else %}All Categories{% endif %}</option><option>{% if lang == 'ar' %}إنشاءات{% else %}Construction{% endif %}</option><option>{% if lang == 'ar' %}تقنية{% else %}Technology{% endif %}</option></select>
+    <select style="width:140px;"><option>{% if lang == 'ar' %}كل الحالات{% else %}All Status{% endif %}</option><option>{% if lang == 'ar' %}نشط{% else %}Active{% endif %}</option><option>{% if lang == 'ar' %}غير نشط{% else %}Inactive{% endif %}</option></select>
+  </div>
+  <table>
+    <thead><tr>
+      <th>{% if lang == 'ar' %}المورد{% else %}Vendor{% endif %}</th>
+      <th>{% if lang == 'ar' %}الفئة{% else %}Category{% endif %}</th>
+      <th>{% if lang == 'ar' %}التواصل{% else %}Contact{% endif %}</th>
+      <th>{% if lang == 'ar' %}الموقع{% else %}Location{% endif %}</th>
+      <th>{% if lang == 'ar' %}العقود{% else %}Contracts{% endif %}</th>
+      <th>{% if lang == 'ar' %}التقييم{% else %}Rating{% endif %}</th>
+      <th>{% if lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+      <th>{% if lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+    </tr></thead>
+    <tbody>
+    {% for v in vendors %}
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#8B5CF6);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.75rem;flex-shrink:0;">{{ v.name[0] }}</div>
+          <div>
+            <div style="font-weight:700;font-size:0.875rem;">{{ v.name }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">{{ v.code }}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="badge badge-gray">{{ v.category or '—' }}</span></td>
+      <td style="font-size:0.875rem;">
+        <div style="font-weight:600;">{{ v.contact_name or '—' }}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">{{ v.email or '' }}</div>
+      </td>
+      <td style="font-size:0.875rem;color:var(--text-muted);">{{ v.city or '' }}{% if v.city and v.country %}, {% endif %}{{ v.country or '' }}</td>
+      <td style="font-weight:700;color:var(--accent);">{{ v.contract_count }}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.3rem;">
+          {% for i in range(5) %}
+          <i class="fa fa-star" style="font-size:0.75rem;color:{% if i < v.rating|int %}#F59E0B{% else %}var(--border){% endif %};"></i>
+          {% endfor %}
+          <span style="font-size:0.8rem;font-weight:700;">{{ v.rating }}</span>
+        </div>
+      </td>
+      <td>{% if v.status == 'active' %}<span class="badge badge-success">{% if lang == 'ar' %}نشط{% else %}Active{% endif %}</span>{% else %}<span class="badge badge-gray">{% if lang == 'ar' %}غير نشط{% else %}Inactive{% endif %}</span>{% endif %}</td>
+      <td>
+        <div style="display:flex;gap:0.4rem;">
+          <button style="padding:0.3rem 0.6rem;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:0.8rem;color:var(--text);"><i class="fa fa-eye"></i></button>
+          <button style="padding:0.3rem 0.6rem;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:0.8rem;color:var(--text);"><i class="fa fa-pencil"></i></button>
+          <button style="padding:0.3rem 0.6rem;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:0.8rem;color:var(--text);"><i class="fa fa-file-lines"></i></button>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

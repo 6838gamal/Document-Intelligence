@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ dir }}" class="{{ theme }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocIQ - {% if lang == 'ar' %}تسجيل الدخول{% else %}Sign In{% endif %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root { --accent: #3B82F6; --primary: #1B2A4A; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: {% if lang == 'ar' %}'Cairo'{% else %}'Inter'{% endif %}, sans-serif;
+      background: linear-gradient(135deg, #0F172A 0%, #1B2A4A 50%, #0F172A 100%);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    .login-card {
+      background: rgba(255,255,255,0.05); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+      padding: 2.5rem; width: 100%; max-width: 440px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+    }
+    .form-input {
+      width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 0.75rem 1rem; color: white; font-size: 0.9rem;
+      outline: none; transition: 0.2s; font-family: inherit;
+    }
+    .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+    .form-input::placeholder { color: rgba(255,255,255,0.35); }
+    label { font-size: 0.875rem; color: rgba(255,255,255,0.7); margin-bottom: 0.4rem; display: block; font-weight: 500; }
+    .btn-login {
+      width: 100%; background: var(--accent); color: white; border: none;
+      padding: 0.875rem; border-radius: 10px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: 0.2s; font-family: inherit;
+    }
+    .btn-login:hover { background: #2563EB; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59,130,246,0.4); }
+    .dots { display: flex; gap: 6px; justify-content: center; margin-top: 2rem; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+    .dot.active { background: var(--accent); }
+  </style>
+</head>
+<body>
+  <div style="width: 100%; max-width: 440px; padding: 1rem;">
+    <div class="login-card">
+      <div style="text-align:center;margin-bottom:2rem;">
+        <div style="width:56px;height:56px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem;">
+          <i class="fa fa-brain" style="color:white;"></i>
+        </div>
+        <h1 style="color:white;font-size:1.5rem;font-weight:800;margin-bottom:0.25rem;">DocIQ</h1>
+        <p style="color:rgba(255,255,255,0.5);font-size:0.875rem;">{% if lang == 'ar' %}منصة ذكاء المستندات المؤسسية{% else %}Enterprise Document Intelligence{% endif %}</p>
+      </div>
+
+      {% if error %}
+      <div style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem;">
+        <i class="fa fa-circle-exclamation" style="color:#EF4444;"></i>
+        <span style="color:#FCA5A5;font-size:0.875rem;">{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/auth/login">
+        <div style="margin-bottom:1.25rem;">
+          <label>{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}</label>
+          <div style="position:relative;">
+            <i class="fa fa-envelope" style="position:absolute;{% if dir == 'rtl' %}right:1rem;{% else %}left:1rem;{% endif %}top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.35);font-size:0.875rem;"></i>
+            <input type="email" name="email" class="form-input" placeholder="{% if lang == 'ar' %}admin@dociq.io{% else %}admin@dociq.io{% endif %}"
+              style="{% if dir == 'rtl' %}padding-right:2.75rem;{% else %}padding-left:2.75rem;{% endif %}" value="admin@dociq.io" required />
+          </div>
+        </div>
+        <div style="margin-bottom:1.5rem;">
+          <label>{% if lang == 'ar' %}كلمة المرور{% else %}Password{% endif %}</label>
+          <div style="position:relative;" x-data="{ show: false }">
+            <i class="fa fa-lock" style="position:absolute;{% if dir == 'rtl' %}right:1rem;{% else %}left:1rem;{% endif %}top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.35);font-size:0.875rem;"></i>
+            <input :type="show ? 'text' : 'password'" name="password" class="form-input" placeholder="••••••••"
+              style="{% if dir == 'rtl' %}padding-right:2.75rem;padding-left:2.75rem;{% else %}padding-left:2.75rem;padding-right:2.75rem;{% endif %}" value="admin123" required />
+            <button type="button" @click="show = !show" style="position:absolute;{% if dir == 'rtl' %}left:1rem;{% else %}right:1rem;{% endif %}top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.35);">
+              <i :class="show ? 'fa fa-eye-slash' : 'fa fa-eye'" style="font-size:0.875rem;"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-login">
+          <i class="fa fa-right-to-bracket" style="margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.5rem;"></i>
+          {% if lang == 'ar' %}دخول{% else %}Sign In{% endif %}
+        </button>
+      </form>
+
+      <div style="margin-top:1.5rem;padding:1rem;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:10px;">
+        <p style="color:rgba(255,255,255,0.6);font-size:0.78rem;margin-bottom:0.5rem;font-weight:600;">{% if lang == 'ar' %}حسابات التجربة{% else %}Demo Accounts{% endif %}</p>
+        <div style="display:grid;gap:0.25rem;">
+          <span style="color:rgba(255,255,255,0.5);font-size:0.75rem;">admin@dociq.io / admin123 — {% if lang == 'ar' %}مدير النظام{% else %}Super Admin{% endif %}</span>
+          <span style="color:rgba(255,255,255,0.5);font-size:0.75rem;">manager@dociq.io / manager123 — {% if lang == 'ar' %}مدير{% else %}Manager{% endif %}</span>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:0.5rem;flex-wrap:wrap;">
+        <form method="POST" action="/auth/set-lang" style="margin:0;">
+          <input type="hidden" name="lang" value="ar" />
+          <button type="submit" style="background:none;border:1px solid rgba(255,255,255,{% if lang == 'ar' %}0.3{% else %}0.1{% endif %});color:rgba(255,255,255,{% if lang == 'ar' %}0.9{% else %}0.4{% endif %});border-radius:6px;padding:0.3rem 0.75rem;font-size:0.8rem;cursor:pointer;">عربي</button>
+        </form>
+        <form method="POST" action="/auth/set-lang" style="margin:0;">
+          <input type="hidden" name="lang" value="en" />
+          <button type="submit" style="background:none;border:1px solid rgba(255,255,255,{% if lang == 'en' %}0.3{% else %}0.1{% endif %});color:rgba(255,255,255,{% if lang == 'en' %}0.9{% else %}0.4{% endif %});border-radius:6px;padding:0.3rem 0.75rem;font-size:0.8rem;cursor:pointer;">English</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

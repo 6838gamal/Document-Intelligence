@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}سجل المراجعة{% else %}Audit Trail{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}سجل المراجعة والتدقيق{% else %}Audit Trail{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{{ logs|length }} {% if lang == 'ar' %}حدث مسجل{% else %}recorded events{% endif %}</p>
+  </div>
+  <div style="display:flex;gap:0.75rem;">
+    <button class="btn-secondary"><i class="fa fa-file-export"></i> {% if lang == 'ar' %}تصدير{% else %}Export{% endif %}</button>
+    <button class="btn-secondary"><i class="fa fa-filter"></i> {% if lang == 'ar' %}فلاتر متقدمة{% else %}Advanced Filters{% endif %}</button>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="card" style="margin-bottom:1rem;padding:1rem 1.25rem;">
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <div style="flex:1;min-width:180px;">
+      <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}بحث{% else %}Search{% endif %}</label>
+      <input type="text" placeholder="{% if lang == 'ar' %}بحث في الأحداث...{% else %}Search events...{% endif %}" />
+    </div>
+    <div style="min-width:160px;">
+      <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}نوع الإجراء{% else %}Action Type{% endif %}</label>
+      <select>
+        <option>{% if lang == 'ar' %}الكل{% else %}All{% endif %}</option>
+        <option>LOGIN</option><option>UPLOAD_DOCUMENT</option><option>APPROVE_DOCUMENT</option><option>UPDATE_USER</option>
+      </select>
+    </div>
+    <div style="min-width:160px;">
+      <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}نوع المورد{% else %}Resource Type{% endif %}</label>
+      <select><option>{% if lang == 'ar' %}الكل{% else %}All{% endif %}</option><option>document</option><option>user</option><option>workflow</option><option>session</option></select>
+    </div>
+    <div style="min-width:140px;">
+      <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:0.35rem;">{% if lang == 'ar' %}من تاريخ{% else %}From Date{% endif %}</label>
+      <input type="date" />
+    </div>
+    <button class="btn-primary"><i class="fa fa-filter"></i> {% if lang == 'ar' %}تصفية{% else %}Filter{% endif %}</button>
+  </div>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>{% if lang == 'ar' %}الوقت{% else %}Timestamp{% endif %}</th>
+        <th>{% if lang == 'ar' %}المستخدم{% else %}User{% endif %}</th>
+        <th>{% if lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+        <th>{% if lang == 'ar' %}المورد{% else %}Resource{% endif %}</th>
+        <th>{% if lang == 'ar' %}عنوان IP{% else %}IP Address{% endif %}</th>
+        <th>{% if lang == 'ar' %}التفاصيل{% else %}Details{% endif %}</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for log in logs %}
+    <tr>
+      <td style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;">
+        {{ log.created_at.strftime('%Y/%m/%d %H:%M:%S') if log.created_at else '—' }}
+      </td>
+      <td>
+        {% if log.user %}
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#8B5CF6);display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;">{{ log.user.name[0] }}</div>
+          <span style="font-size:0.875rem;font-weight:600;">{{ log.user.name }}</span>
+        </div>
+        {% else %}—{% endif %}
+      </td>
+      <td>
+        {% set action_colors = {'LOGIN':'info','LOGOUT':'gray','UPLOAD_DOCUMENT':'success','APPROVE_DOCUMENT':'success','REJECT_DOCUMENT':'danger','UPDATE_USER':'warning','CREATE_WORKFLOW':'info','DELETE_DOCUMENT':'danger','VIEW_DOCUMENT':'gray'} %}
+        <span class="badge badge-{{ action_colors.get(log.action, 'gray') }}">{{ log.action }}</span>
+      </td>
+      <td>
+        <span class="badge badge-gray">{{ log.resource_type or '—' }}</span>
+        {% if log.resource_id %}<span style="font-size:0.75rem;color:var(--text-muted);margin-{% if dir == 'rtl' %}right{% else %}left{% endif %}:0.4rem;">#{{ log.resource_id }}</span>{% endif %}
+      </td>
+      <td style="font-size:0.8rem;font-family:monospace;color:var(--text-muted);">{{ log.ip_address or '—' }}</td>
+      <td>
+        {% if log.after_data %}
+        <button onclick="alert(JSON.stringify({{ log.after_data }}, null, 2))" style="padding:0.2rem 0.6rem;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:0.75rem;color:var(--accent);">
+          <i class="fa fa-eye"></i> {% if lang == 'ar' %}عرض{% else %}View{% endif %}
+        </button>
+        {% else %}—{% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--text-muted);">
+      <i class="fa fa-clipboard-list" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:0.75rem;"></i>
+      {% if lang == 'ar' %}لا توجد سجلات{% else %}No audit records{% endif %}
+    </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

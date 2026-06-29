@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}رفع مستند{% else %}Upload Document{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="max-width:800px;margin:0 auto;">
+  <div style="margin-bottom:1.5rem;">
+    <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}رفع مستند جديد{% else %}Upload New Document{% endif %}</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;">{% if lang == 'ar' %}سيتم معالجة المستند تلقائياً بواسطة الذكاء الاصطناعي{% else %}Document will be processed automatically by AI{% endif %}</p>
+  </div>
+
+  <!-- DROPZONE -->
+  <div class="card" style="margin-bottom:1.25rem;" x-data="{ dragging: false, files: [] }">
+    <div @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dragging = false"
+      :style="dragging ? 'border-color:var(--accent);background:rgba(59,130,246,0.04)' : ''"
+      style="border:2px dashed var(--border);border-radius:12px;padding:3rem;text-align:center;transition:0.2s;cursor:pointer;"
+      onclick="document.getElementById('fileInput').click()">
+      <div style="width:64px;height:64px;background:rgba(59,130,246,0.08);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+        <i class="fa fa-cloud-arrow-up" style="font-size:1.75rem;color:var(--accent);"></i>
+      </div>
+      <h3 style="font-weight:700;margin-bottom:0.5rem;">{% if lang == 'ar' %}اسحب الملفات هنا أو اضغط للتحديد{% else %}Drag files here or click to browse{% endif %}</h3>
+      <p style="color:var(--text-muted);font-size:0.875rem;">{% if lang == 'ar' %}يدعم PDF, DOCX, XLSX, PNG, JPG حتى 50MB{% else %}Supports PDF, DOCX, XLSX, PNG, JPG up to 50MB{% endif %}</p>
+      <input id="fileInput" type="file" style="display:none;" accept=".pdf,.docx,.xlsx,.png,.jpg" multiple />
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem;">
+      {% for fmt, icon, color, label in [('PDF','file-pdf','#EF4444','PDF'),('DOCX','file-word','#3B82F6','Word'),('XLSX','file-excel','#10B981','Excel'),('Image','image','#8B5CF6','Image')] %}
+      <div style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem;background:var(--bg);border-radius:8px;border:1px solid var(--border);">
+        <i class="fa fa-{{ icon }}" style="color:{{ color }};"></i>
+        <span style="font-size:0.8rem;color:var(--text-muted);">{{ label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- METADATA FORM -->
+  <form method="POST" action="/documents/upload">
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-weight:700;margin-bottom:1.25rem;">{% if lang == 'ar' %}بيانات المستند{% else %}Document Metadata{% endif %}</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+        <div>
+          <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.4rem;">{% if lang == 'ar' %}عنوان المستند *{% else %}Document Title *{% endif %}</label>
+          <input type="text" name="title" required placeholder="{% if lang == 'ar' %}أدخل عنوان المستند{% else %}Enter document title{% endif %}" />
+        </div>
+        <div>
+          <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.4rem;">{% if lang == 'ar' %}الفئة *{% else %}Category *{% endif %}</label>
+          <select name="category" required>
+            <option value="">{% if lang == 'ar' %}اختر الفئة{% else %}Select category{% endif %}</option>
+            {% for cat in ['عقود','فواتير','تقارير','مخططات','مواصفات فنية','سياسات','عروض أسعار','محاضر'] %}
+            <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.4rem;">{% if lang == 'ar' %}مسار العمل{% else %}Workflow{% endif %}</label>
+          <select>
+            <option>{% if lang == 'ar' %}تلقائي{% else %}Auto-detect{% endif %}</option>
+            <option>{% if lang == 'ar' %}مسار اعتماد العقود{% else %}Contract Approval{% endif %}</option>
+            <option>{% if lang == 'ar' %}مسار الفواتير{% else %}Invoice Processing{% endif %}</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.4rem;">{% if lang == 'ar' %}الأولوية{% else %}Priority{% endif %}</label>
+          <select>
+            <option value="normal">{% if lang == 'ar' %}عادية{% else %}Normal{% endif %}</option>
+            <option value="high">{% if lang == 'ar' %}عالية{% else %}High{% endif %}</option>
+            <option value="urgent">{% if lang == 'ar' %}عاجل{% else %}Urgent{% endif %}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI OPTIONS -->
+    <div class="card" style="margin-bottom:1.25rem;">
+      <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang == 'ar' %}خيارات المعالجة الذكية{% else %}AI Processing Options{% endif %}</h3>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;">
+        {% for opt_ar, opt_en, checked in [('OCR واستخراج النص','OCR & Text Extraction',True),('تصنيف تلقائي','Auto Classification',True),('استخراج البيانات الرئيسية','Key Data Extraction',True),('كشف اللغة','Language Detection',True),('إنشاء ملخص AI','AI Summary Generation',False),('مطابقة المستندات','Document Matching',False)] %}
+        <label style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;border-radius:8px;border:1px solid var(--border);cursor:pointer;">
+          <input type="checkbox" {% if checked %}checked{% endif %} style="width:16px;height:16px;accent-color:var(--accent);" />
+          <span style="font-size:0.875rem;">{% if lang == 'ar' %}{{ opt_ar }}{% else %}{{ opt_en }}{% endif %}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+      <a href="/documents" class="btn-secondary"><i class="fa fa-xmark"></i> {% if lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</a>
+      <button type="submit" class="btn-primary"><i class="fa fa-cloud-arrow-up"></i> {% if lang == 'ar' %}رفع ومعالجة{% else %}Upload & Process{% endif %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
