@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: masih-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DOCIQ_DATABASE_URL=${DOCIQ_DATABASE_URL}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - DEBUG=false
+      - API_BASE_URL=https://masih-almustanadat-api.onrender.com
+    restart: unless-stopped
+    networks:
+      - masih-network
+
+networks:
+  masih-network:
+    driver: bridge
