@@ -18,6 +18,19 @@ services:
     networks:
       - masih-network
 
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: masih-admin
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    networks:
+      - masih-network
+    depends_on:
+      - backend
+
 networks:
   masih-network:
     driver: bridge
