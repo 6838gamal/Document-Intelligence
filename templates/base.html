@@ -346,7 +346,104 @@
 
 <style>
   @media (max-width: 768px) { .mobile-menu-btn { display: flex !important; } .search-input { width: 160px !important; } }
+
+  /* ── Floating Admin Trigger ── */
+  #admin-fab {
+    position: fixed;
+    bottom: 1.25rem;
+    {% if dir == 'rtl' %}left: 50%; transform: translateX(-50%);{% else %}left: 50%; transform: translateX(-50%);{% endif %}
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--primary); color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 99px; padding: 0.45rem 1rem;
+    cursor: default; z-index: 200; user-select: none;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.03em;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  #admin-fab:hover { color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.18); }
+  #admin-fab .fab-icon {
+    width: 22px; height: 22px; background: var(--accent);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; color: white; flex-shrink: 0;
+  }
+
+  /* ── Admin Login Modal ── */
+  #admin-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+    z-index: 9000; align-items: center; justify-content: center;
+  }
+  #admin-modal-overlay.show { display: flex; }
+  #admin-modal {
+    background: linear-gradient(145deg, #0F172A, #1B2A4A);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 20px;
+    padding: 2rem; width: 100%; max-width: 400px; margin: 1rem;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn { from { opacity:0; transform:scale(0.92) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  #admin-modal .modal-input {
+    width: 100%; background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+    padding: 0.7rem 1rem; color: white; font-size: 0.875rem;
+    outline: none; transition: 0.2s; font-family: inherit; box-sizing: border-box;
+  }
+  #admin-modal .modal-input:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+  #admin-modal .modal-input::placeholder { color: rgba(255,255,255,0.3); }
+  #admin-modal-btn {
+    width: 100%; background: #3B82F6; color: white; border: none;
+    padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: 0.2s; font-family: inherit; margin-top: 1.25rem;
+  }
+  #admin-modal-btn:hover { background: #2563EB; }
+  #admin-modal-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  #admin-modal-err {
+    display: none; background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3); border-radius: 8px;
+    padding: 0.6rem 0.875rem; color: #FCA5A5; font-size: 0.8rem; margin-bottom: 1rem;
+  }
 </style>
+
+<!-- ── Floating DocIQ Logo (Double-click to open Admin) ── -->
+<div id="admin-fab" title="{% if lang == 'ar' %}انقر مرتين لفتح لوحة التحكم{% else %}Double-click to open Admin Panel{% endif %}">
+  <div class="fab-icon"><i class="fa fa-brain"></i></div>
+  <span>{% if lang == 'ar' %}ماسح المستندات{% else %}DocIQ{% endif %}</span>
+</div>
+
+<!-- ── Admin Login Modal ── -->
+<div id="admin-modal-overlay">
+  <div id="admin-modal">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="width:48px;height:48px;background:#3B82F6;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;font-size:1.25rem;">
+        <i class="fa fa-brain" style="color:white;"></i>
+      </div>
+      <div style="color:white;font-weight:800;font-size:1.1rem;">DocIQ</div>
+      <div style="color:rgba(255,255,255,0.4);font-size:0.8rem;margin-top:0.2rem;">{% if lang == 'ar' %}لوحة التحكم الإدارية{% else %}Admin Panel{% endif %}</div>
+    </div>
+
+    <div id="admin-modal-err"></div>
+
+    <div style="margin-bottom:0.875rem;">
+      <label style="font-size:0.8rem;color:rgba(255,255,255,0.6);display:block;margin-bottom:0.35rem;font-weight:600;">{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</label>
+      <input id="admin-email" type="email" class="modal-input" placeholder="admin@dociq.io" autocomplete="username" />
+    </div>
+    <div>
+      <label style="font-size:0.8rem;color:rgba(255,255,255,0.6);display:block;margin-bottom:0.35rem;font-weight:600;">{% if lang == 'ar' %}كلمة المرور{% else %}Password{% endif %}</label>
+      <input id="admin-password" type="password" class="modal-input" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+
+    <button id="admin-modal-btn">
+      <i class="fa fa-right-to-bracket" style="margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.5rem;"></i>
+      {% if lang == 'ar' %}دخول{% else %}Sign In{% endif %}
+    </button>
+
+    <button onclick="closeAdminModal()" style="display:block;width:100%;margin-top:0.75rem;background:none;border:none;color:rgba(255,255,255,0.35);font-size:0.8rem;cursor:pointer;font-family:inherit;">
+      {% if lang == 'ar' %}إغلاق{% else %}Close{% endif %}
+    </button>
+  </div>
+</div>
+
 <script>
   document.querySelectorAll('[data-stat]').forEach(el => {
     const target = parseInt(el.dataset.stat);
@@ -358,6 +455,101 @@
       if (current >= target) clearInterval(timer);
     }, 30);
   });
+
+  // ── Double-click on FAB to open modal ──
+  let fabClickCount = 0, fabClickTimer = null;
+  document.getElementById('admin-fab').addEventListener('click', () => {
+    fabClickCount++;
+    if (fabClickCount === 1) {
+      fabClickTimer = setTimeout(() => { fabClickCount = 0; }, 400);
+    } else if (fabClickCount >= 2) {
+      clearTimeout(fabClickTimer);
+      fabClickCount = 0;
+      openAdminModal();
+    }
+  });
+
+  // ── Close modal on overlay click ──
+  document.getElementById('admin-modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('admin-modal-overlay')) closeAdminModal();
+  });
+
+  // ── Close on Escape ──
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAdminModal(); });
+
+  function openAdminModal() {
+    document.getElementById('admin-modal-overlay').classList.add('show');
+    setTimeout(() => document.getElementById('admin-email').focus(), 100);
+  }
+
+  function closeAdminModal() {
+    document.getElementById('admin-modal-overlay').classList.remove('show');
+    document.getElementById('admin-modal-err').style.display = 'none';
+    document.getElementById('admin-password').value = '';
+  }
+
+  // ── Login on Enter ──
+  ['admin-email','admin-password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') adminLogin();
+    });
+  });
+
+  document.getElementById('admin-modal-btn').addEventListener('click', adminLogin);
+
+  async function adminLogin() {
+    const email = document.getElementById('admin-email').value.trim();
+    const password = document.getElementById('admin-password').value;
+    const btn = document.getElementById('admin-modal-btn');
+    const err = document.getElementById('admin-modal-err');
+
+    if (!email || !password) {
+      showAdminErr('{% if lang == "ar" %}يرجى إدخال البريد وكلمة المرور{% else %}Please enter email and password{% endif %}');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+    err.style.display = 'none';
+
+    try {
+      const form = new URLSearchParams();
+      form.append('username', email);
+      form.append('password', password);
+
+      const res = await fetch('/api/v1/auth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || '{% if lang == "ar" %}بيانات الدخول غير صحيحة{% else %}Invalid credentials{% endif %}');
+      }
+
+      const data = await res.json();
+      const allowed = ['super_admin', 'admin', 'manager'];
+      if (!allowed.includes(data.user_role)) {
+        throw new Error('{% if lang == "ar" %}ليس لديك صلاحية الوصول للوحة التحكم{% else %}Insufficient permissions for Admin Panel{% endif %}');
+      }
+
+      localStorage.setItem('dociq_admin_token', data.access_token);
+      localStorage.setItem('dociq_admin_user', JSON.stringify({ name: data.user_name, role: data.user_role }));
+      window.location.href = '/admin/index.html';
+
+    } catch (e) {
+      showAdminErr(e.message);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa fa-right-to-bracket" style="margin-{% if dir == "rtl" %}left{% else %}right{% endif %}:0.5rem;"></i>{% if lang == "ar" %}دخول{% else %}Sign In{% endif %}';
+    }
+  }
+
+  function showAdminErr(msg) {
+    const err = document.getElementById('admin-modal-err');
+    err.textContent = msg;
+    err.style.display = 'block';
+  }
 </script>
 {% block scripts %}{% endblock %}
 </body>
