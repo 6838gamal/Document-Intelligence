@@ -356,6 +356,8 @@
           API.get("/api/v1/stats"),
           API.get("/api/v1/productivity"),
         ]);
+        // Guard: API.get returns undefined when redirecting to login on 401
+        if (!stats || !prod) return;
         renderStats(stats);
         renderMiniCharts(prod);
       } catch (e) { console.error(e); }

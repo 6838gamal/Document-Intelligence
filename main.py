@@ -1,13 +1,36 @@
 import os
+import asyncio
+import logging
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
+from sqlalchemy import text as _sa_text
 from app.core.database import engine, SessionLocal
 from app.core import models
 from app.core.seed import seed_database
+
+logger = logging.getLogger(__name__)
+
+
+async def _db_keepalive():
+    """Server-side task: ping DB every 7 min to keep server & connection alive.
+    Runs independently of any browser — ensures 24/7 uptime on Render."""
+    while True:
+        await asyncio.sleep(7 * 60)
+        try:
+            def _ping():
+                db = SessionLocal()
+                try:
+                    db.execute(_sa_text("SELECT 1"))
+                finally:
+                    db.close()
+            await asyncio.to_thread(_ping)
+            logger.info("[keepalive] ✓ DB ping OK — server awake")
+        except Exception as exc:
+            logger.warning(f"[keepalive] ✗ DB ping failed: {exc}")
 from app.modules.auth.router import router as auth_router
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.documents.router import router as documents_router
@@ -36,7 +59,16 @@ async def lifespan(app: FastAPI):
         seed_database(db)
     finally:
         db.close()
+
+    # Start server-side 24/7 keepalive — independent of any browser session
+    _task = asyncio.create_task(_db_keepalive())
+    logger.info("[keepalive] Background DB keepalive started (every 7 min)")
     yield
+    _task.cancel()
+    try:
+        await _task
+    except asyncio.CancelledError:
+        pass
 
 
 app = FastAPI(title="Document Intelligence Platform", version="1.0.0", lifespan=lifespan)
@@ -94,3 +126,20 @@ app.include_router(settings_router)
 @app.get("/")
 async def root():
     return RedirectResponse(url="/dashboard")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    # Browsers request this even when <link rel="icon"> is set in HTML.
+    # Return a minimal SVG so the server logs stay clean (no 404 noise).
+    svg = (
+        b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+        b'<rect width="32" height="32" rx="8" fill="#2563eb"/>'
+        b'<path d="M10 10h8l4 4v12H10z" fill="white" opacity=".9"/>'
+        b'<path d="M18 10v4h4" fill="none" stroke="#2563eb" stroke-width="1.5"/>'
+        b'<path d="M13 17h6M13 20h5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>'
+        b'</svg>'
+    )
+    from fastapi.responses import Response
+    return Response(content=svg, media_type="image/svg+xml",
+                    headers={"Cache-Control": "public, max-age=86400"})

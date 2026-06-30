@@ -143,7 +143,11 @@
       height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s;
     }
     @media (max-width: 768px) {
-      .sidebar { transform: translateX({% if dir == 'rtl' %}100%{% else %}-100%{% endif %}); }
+      html, body { overflow-x: hidden; }
+      .sidebar {
+        transform: translateX({% if dir == 'rtl' %}100%{% else %}-100%{% endif %});
+        max-width: 85vw;   /* never wider than screen on tiny phones */
+      }
       .sidebar.open { transform: translateX(0); }
       .main-content { margin: 0 !important; }
     }
@@ -167,7 +171,9 @@
   </style>
   {% block head %}{% endblock %}
 </head>
-<body x-data="{ sidebarOpen: false, notifOpen: false, userOpen: false }" @click.outside="notifOpen = false; userOpen = false">
+<body x-data="{ sidebarOpen: false, notifOpen: false, userOpen: false }"
+      :class="{ 'overflow-hidden': sidebarOpen }"
+      @click.outside="notifOpen = false; userOpen = false">
 
 <!-- Mobile Overlay -->
 <div class="dark-overlay" :class="{ 'show': sidebarOpen }" @click="sidebarOpen = false"></div>
@@ -301,19 +307,14 @@
       <div style="position:relative;">
         <button @click="notifOpen = !notifOpen" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.75rem;cursor:pointer;color:var(--text);font-size:0.875rem;position:relative;">
           <i class="fa fa-bell"></i>
-          <span style="position:absolute;top:-4px;{% if dir == 'rtl' %}left:-4px;{% else %}right:-4px;{% endif %}background:var(--danger);color:white;border-radius:50%;width:16px;height:16px;font-size:0.65rem;display:flex;align-items:center;justify-content:center;font-weight:700;">3</span>
+          <span id="notif-badge" style="position:absolute;top:-4px;{% if dir == 'rtl' %}left:-4px;{% else %}right:-4px;{% endif %}background:var(--danger);color:white;border-radius:50%;min-width:16px;height:16px;font-size:0.65rem;display:none;align-items:center;justify-content:center;font-weight:700;padding:0 2px;"></span>
         </button>
         <div x-show="notifOpen" x-transition style="position:absolute;{% if dir == 'rtl' %}left:0;{% else %}right:0;{% endif %}top:calc(100% + 8px);width:320px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);z-index:100;overflow:hidden;">
           <div style="padding:0.875rem 1rem;border-bottom:1px solid var(--border);font-weight:700;">{% if lang == 'ar' %}الإشعارات{% else %}Notifications{% endif %}</div>
-          <div style="padding:0.5rem 0;">
-            <a href="/approvals" style="display:flex;gap:0.75rem;padding:0.75rem 1rem;text-decoration:none;color:var(--text);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-              <div style="width:36px;height:36px;background:#FEF3C7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-triangle-exclamation" style="color:#D97706;font-size:0.875rem;"></i></div>
-              <div><div style="font-weight:600;font-size:0.875rem;">{% if lang == 'ar' %}طلب اعتماد جديد{% else %}New Approval Request{% endif %}</div><div style="font-size:0.75rem;color:var(--text-muted);">{% if lang == 'ar' %}منذ 10 دقائق{% else %}10 minutes ago{% endif %}</div></div>
-            </a>
-            <a href="/documents" style="display:flex;gap:0.75rem;padding:0.75rem 1rem;text-decoration:none;color:var(--text);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-              <div style="width:36px;height:36px;background:#D1FAE5;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-check" style="color:#059669;font-size:0.875rem;"></i></div>
-              <div><div style="font-weight:600;font-size:0.875rem;">{% if lang == 'ar' %}تمت معالجة المستند{% else %}Document Processed{% endif %}</div><div style="font-size:0.75rem;color:var(--text-muted);">{% if lang == 'ar' %}منذ ساعة{% else %}1 hour ago{% endif %}</div></div>
-            </a>
+          <div id="notif-items" style="padding:0.5rem 0;min-height:60px;">
+            <div style="padding:1rem;text-align:center;color:var(--text-muted);font-size:0.8rem;">
+              <i class="fa fa-spinner fa-spin"></i>
+            </div>
           </div>
           <div style="padding:0.5rem 1rem;border-top:1px solid var(--border);">
             <a href="/notifications" style="color:var(--accent);font-size:0.875rem;font-weight:600;text-decoration:none;">{% if lang == 'ar' %}عرض الكل{% else %}View All{% endif %}</a>
@@ -324,7 +325,7 @@
       <div style="position:relative;">
         <button @click="userOpen = !userOpen" style="display:flex;align-items:center;gap:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.875rem;cursor:pointer;">
           <div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">{% if user %}{{ user.name[0] }}{% else %}A{% endif %}</div>
-          <span style="font-size:0.875rem;font-weight:600;color:var(--text);">{% if user %}{{ user.name.split()[0] }}{% else %}Admin{% endif %}</span>
+          <span class="user-name-text" style="font-size:0.875rem;font-weight:600;color:var(--text);">{% if user %}{{ user.name.split()[0] }}{% else %}Admin{% endif %}</span>
           <i class="fa fa-chevron-down" style="font-size:0.65rem;color:var(--text-muted);"></i>
         </button>
         <div x-show="userOpen" x-transition style="position:absolute;{% if dir == 'rtl' %}left:0;{% else %}right:0;{% endif %}top:calc(100% + 8px);width:200px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);z-index:100;overflow:hidden;">
@@ -358,6 +359,10 @@
     .topbar { padding: 0 0.625rem !important; gap: 0.5rem; }
     .topbar-lang-btn { display: none !important; }
     main { padding: 0.75rem !important; }
+  }
+  @media (max-width: 360px) {
+    .user-name-text { display: none !important; }
+    .topbar { gap: 0.35rem !important; }
   }
 
   /* ── Floating Admin Trigger ── */
@@ -565,5 +570,72 @@
   }
 </script>
 {% block scripts %}{% endblock %}
+
+<script>
+/* ── Live notification badge & dropdown ────────────────────────── */
+(async () => {
+  const typeIcon = {
+    info:    { bg: '#E0F2FE', icon: 'fa-circle-info',          color: '#0284C7' },
+    warning: { bg: '#FEF3C7', icon: 'fa-triangle-exclamation', color: '#D97706' },
+    success: { bg: '#D1FAE5', icon: 'fa-circle-check',         color: '#059669' },
+    danger:  { bg: '#FEE2E2', icon: 'fa-circle-xmark',         color: '#DC2626' },
+  };
+  function timeAgo(iso) {
+    if (!iso) return '';
+    const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+    if (diff < 60)   return '{% if lang == "ar" %}الآن{% else %}now{% endif %}';
+    if (diff < 3600) return Math.floor(diff/60)  + ' {% if lang == "ar" %}د{% else %}m{% endif %}';
+    if (diff < 86400)return Math.floor(diff/3600) + ' {% if lang == "ar" %}س{% else %}h{% endif %}';
+    return Math.floor(diff/86400) + ' {% if lang == "ar" %}ي{% else %}d{% endif %}';
+  }
+  try {
+    const r = await fetch('/notifications/count', { credentials: 'same-origin', cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+
+    /* badge */
+    const badge = document.getElementById('notif-badge');
+    if (badge && d.pending_approvals > 0) {
+      badge.textContent = d.pending_approvals > 99 ? '99+' : d.pending_approvals;
+      badge.style.display = 'flex';
+    }
+
+    /* dropdown items */
+    const container = document.getElementById('notif-items');
+    if (!container) return;
+    let html = '';
+
+    if (d.notifications && d.notifications.length) {
+      html = d.notifications.map(n => {
+        const t = typeIcon[n.type] || typeIcon.info;
+        return `<a href="${n.url}" style="display:flex;gap:0.75rem;padding:0.75rem 1rem;text-decoration:none;color:var(--text);"
+                   onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+          <div style="width:36px;height:36px;background:${t.bg};border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fa ${t.icon}" style="color:${t.color};font-size:0.875rem;"></i></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n.title}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">${timeAgo(n.created_at)}</div>
+          </div></a>`;
+      }).join('');
+    } else if (d.pending_approvals > 0) {
+      html = `<a href="/approvals" style="display:flex;gap:0.75rem;padding:0.75rem 1rem;text-decoration:none;color:var(--text);"
+                 onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+        <div style="width:36px;height:36px;background:#FEF3C7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa fa-triangle-exclamation" style="color:#D97706;font-size:0.875rem;"></i></div>
+        <div>
+          <div style="font-weight:600;font-size:0.875rem;">
+            ${d.pending_approvals} {% if lang == 'ar' %}اعتماد بانتظار الموافقة{% else %}approval(s) pending{% endif %}
+          </div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">{% if lang == 'ar' %}انقر للمراجعة{% else %}Click to review{% endif %}</div>
+        </div></a>`;
+    } else {
+      html = `<div style="padding:1.5rem 1rem;text-align:center;color:var(--text-muted);font-size:0.875rem;">
+        <i class="fa fa-bell-slash" style="font-size:1.5rem;display:block;margin-bottom:0.5rem;opacity:0.4;"></i>
+        {% if lang == 'ar' %}لا توجد إشعارات جديدة{% else %}No new notifications{% endif %}</div>`;
+    }
+    container.innerHTML = html;
+  } catch { /* user not logged in or network error — silent */ }
+})();
+</script>
 </body>
 </html>
