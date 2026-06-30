@@ -152,7 +152,7 @@
       </div>
 
       <!-- Charts row -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <div class="card p-6">
           <h3 class="font-semibold text-white mb-4 text-sm">المستندات المرفوعة (14 يوم)</h3>
           <canvas id="docs-chart" height="160"></canvas>
@@ -160,6 +160,51 @@
         <div class="card p-6">
           <h3 class="font-semibold text-white mb-4 text-sm">طلبات الاعتماد (14 يوم)</h3>
           <canvas id="approvals-chart" height="160"></canvas>
+        </div>
+      </div>
+
+      <!-- ── Server Status Card ── -->
+      <div class="card p-5" id="server-status-card">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🖥️</span>
+            <h3 class="font-semibold text-white text-sm">حالة الخادم</h3>
+          </div>
+          <!-- Live pulsing dot -->
+          <div class="flex items-center gap-2">
+            <span class="relative flex h-2.5 w-2.5">
+              <span id="hb-pulse-ring" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-slate-600"></span>
+              <span id="hb-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-600"></span>
+            </span>
+            <span id="hb-status-text" class="text-xs font-medium text-slate-400">جارٍ الفحص…</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-slate-800/60 rounded-lg p-3 text-center">
+            <p class="text-xs text-slate-500 mb-1">الحالة</p>
+            <p id="hb-status-val" class="text-sm font-bold text-slate-400">—</p>
+          </div>
+          <div class="bg-slate-800/60 rounded-lg p-3 text-center">
+            <p class="text-xs text-slate-500 mb-1">آخر اتصال</p>
+            <p id="hb-last-ping" class="text-sm font-bold text-slate-400">—</p>
+          </div>
+          <div class="bg-slate-800/60 rounded-lg p-3 text-center">
+            <p class="text-xs text-slate-500 mb-1">زمن الاستجابة</p>
+            <p id="hb-latency" class="text-sm font-bold text-slate-400">—</p>
+          </div>
+          <div class="bg-slate-800/60 rounded-lg p-3 text-center">
+            <p class="text-xs text-slate-500 mb-1">الفحص القادم</p>
+            <p id="hb-next" class="text-sm font-bold text-slate-400">—</p>
+          </div>
+        </div>
+
+        <!-- Ping history bar (last 10 pings) -->
+        <div class="mt-4">
+          <p class="text-xs text-slate-500 mb-2">آخر 10 فحوصات</p>
+          <div id="hb-history" class="flex gap-1 items-end h-6">
+            <!-- filled by JS -->
+          </div>
         </div>
       </div>
     </section>
@@ -502,8 +547,107 @@
       }
     }
 
+    // ── Heartbeat ────────────────────────────────────────────────
+    const Heartbeat = (() => {
+      const INTERVAL_MS  = 7 * 60 * 1000;   // 7 دقائق
+      const MAX_HISTORY  = 10;
+      let history        = [];               // [{ok, ms}]
+      let nextTimer      = null;
+      let countdownTimer = null;
+      let nextPingAt     = null;
+
+      function setUI(state) {
+        // state: 'checking' | 'ok' | 'degraded' | 'error'
+        const dot       = document.getElementById('hb-dot');
+        const ring      = document.getElementById('hb-pulse-ring');
+        const statusTxt = document.getElementById('hb-status-text');
+        const statusVal = document.getElementById('hb-status-val');
+
+        const cfg = {
+          checking: { dot: 'bg-amber-400',   ring: 'bg-amber-400',   txt: 'جارٍ الفحص…',    val: '…'        },
+          ok:       { dot: 'bg-emerald-400',  ring: 'bg-emerald-400', txt: 'متصل',            val: 'متصل ✓'   },
+          degraded: { dot: 'bg-amber-400',    ring: 'bg-amber-400',   txt: 'متدهور',          val: 'متدهور ⚠️' },
+          error:    { dot: 'bg-red-500',      ring: 'bg-red-500',     txt: 'غير متصل',        val: 'خطأ ✕'    },
+        }[state] || cfg.checking;
+
+        ['bg-slate-600','bg-emerald-400','bg-amber-400','bg-red-500'].forEach(c => {
+          dot.classList.remove(c); ring.classList.remove(c);
+        });
+        dot.classList.add(cfg.dot);
+        ring.classList.add(cfg.ring);
+        statusTxt.className = `text-xs font-medium ${state === 'ok' ? 'text-emerald-400' : state === 'error' ? 'text-red-400' : 'text-amber-400'}`;
+        statusTxt.textContent = cfg.txt;
+        statusVal.textContent = cfg.val;
+        statusVal.className   = `text-sm font-bold ${state === 'ok' ? 'text-emerald-400' : state === 'error' ? 'text-red-400' : 'text-amber-400'}`;
+      }
+
+      function updateHistory() {
+        const el = document.getElementById('hb-history');
+        if (!el) return;
+        const maxMs = Math.max(...history.map(h => h.ms), 1);
+        el.innerHTML = history.map(h => {
+          const pct  = Math.max(20, Math.round((h.ms / maxMs) * 100));
+          const color = !h.ok ? '#ef4444' : h.ms < 300 ? '#34d399' : h.ms < 800 ? '#fbbf24' : '#f97316';
+          return `<div title="${h.ok ? h.ms + 'ms' : 'خطأ'}" style="flex:1;height:${pct}%;background:${color};border-radius:3px;transition:height .3s"></div>`;
+        }).join('');
+      }
+
+      function startCountdown() {
+        clearInterval(countdownTimer);
+        countdownTimer = setInterval(() => {
+          const el = document.getElementById('hb-next');
+          if (!el || !nextPingAt) return;
+          const diff = Math.max(0, Math.round((nextPingAt - Date.now()) / 1000));
+          const m = Math.floor(diff / 60), s = diff % 60;
+          el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        }, 1000);
+      }
+
+      async function ping() {
+        setUI('checking');
+        const t0 = performance.now();
+        try {
+          const res  = await fetch('/api/v1/health', { cache: 'no-store' });
+          const ms   = Math.round(performance.now() - t0);
+          const data = await res.json();
+          const ok   = res.ok && data.status !== 'error';
+
+          // Last ping time
+          const now = new Date();
+          document.getElementById('hb-last-ping').textContent =
+            now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+          // Latency
+          const latEl = document.getElementById('hb-latency');
+          latEl.textContent = ms + ' ms';
+          latEl.className   = `text-sm font-bold ${ms < 300 ? 'text-emerald-400' : ms < 800 ? 'text-amber-400' : 'text-orange-400'}`;
+
+          setUI(data.status === 'degraded' ? 'degraded' : 'ok');
+          history.push({ ok: true, ms });
+        } catch {
+          const ms = Math.round(performance.now() - t0);
+          setUI('error');
+          document.getElementById('hb-latency').textContent = '—';
+          document.getElementById('hb-last-ping').textContent = 'فشل';
+          history.push({ ok: false, ms });
+        }
+
+        if (history.length > MAX_HISTORY) history = history.slice(-MAX_HISTORY);
+        updateHistory();
+
+        // Schedule next
+        clearTimeout(nextTimer);
+        nextPingAt = Date.now() + INTERVAL_MS;
+        nextTimer  = setTimeout(ping, INTERVAL_MS);
+        startCountdown();
+      }
+
+      return { start: ping };
+    })();
+
     // Boot
     loadDashboard();
+    Heartbeat.start();
   </script>
 </body>
 </html>

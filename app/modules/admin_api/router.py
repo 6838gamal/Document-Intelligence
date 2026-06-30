@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from sqlalchemy import func, cast, Date
+from sqlalchemy import func, cast, Date, text
+import time as _time
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta, timezone
@@ -60,6 +61,26 @@ async def api_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
         user_name=user.name,
         user_role=user.role
     )
+
+
+# ── Health / Heartbeat ────────────────────────────────────────────
+@router.get("/health")
+async def health_check(db: Session = Depends(get_db)):
+    """Public heartbeat endpoint — no auth. Used by admin panel to keep server awake."""
+    t0 = _time.monotonic()
+    db_ok = False
+    try:
+        db.execute(text("SELECT 1"))
+        db_ok = True
+    except Exception:
+        pass
+    db_ms = round((_time.monotonic() - t0) * 1000)
+    return {
+        "status": "ok" if db_ok else "degraded",
+        "server_time": datetime.now(timezone.utc).isoformat(),
+        "db_ok": db_ok,
+        "db_response_ms": db_ms,
+    }
 
 
 # ── Stats ─────────────────────────────────────────────────────────
