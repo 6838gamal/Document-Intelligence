@@ -283,7 +283,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:0.75rem;">
       <!-- Lang Toggle -->
-      <form method="POST" action="/auth/set-lang" style="margin:0;">
+      <form method="POST" action="/auth/set-lang" style="margin:0;" class="topbar-lang-btn">
         <input type="hidden" name="lang" value="{% if lang == 'ar' %}en{% else %}ar{% endif %}" />
         <button type="submit" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.75rem;cursor:pointer;color:var(--text);font-size:0.8rem;font-weight:600;">
           {% if lang == 'ar' %}EN{% else %}عربي{% endif %}
@@ -345,13 +345,25 @@
 </div>
 
 <style>
-  @media (max-width: 768px) { .mobile-menu-btn { display: flex !important; } .search-input { width: 160px !important; } }
+  @media (max-width: 768px) {
+    .mobile-menu-btn { display: flex !important; }
+    .search-input { width: 160px !important; }
+    .topbar { padding: 0 0.875rem !important; }
+    main { padding: 1rem !important; }
+    .kpi-card { padding: 1rem !important; }
+  }
+  @media (max-width: 480px) {
+    .search-input { display: none !important; }
+    .topbar { padding: 0 0.625rem !important; gap: 0.5rem; }
+    .topbar-lang-btn { display: none !important; }
+    main { padding: 0.75rem !important; }
+  }
 
   /* ── Floating Admin Trigger ── */
   #admin-fab {
     position: fixed;
     bottom: 1.25rem;
-    {% if dir == 'rtl' %}left: 50%; transform: translateX(-50%);{% else %}left: 50%; transform: translateX(-50%);{% endif %}
+    {% if dir == 'rtl' %}left: 1.25rem;{% else %}right: 1.25rem;{% endif %}
     display: flex; align-items: center; gap: 0.5rem;
     background: var(--primary); color: rgba(255,255,255,0.5);
     border: 1px solid rgba(255,255,255,0.08);
