@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 from app.core.database import get_db
-from app.core.models import User
-from app.core.security import verify_password, create_access_token
+from app.core.models import User, UserRole
+from app.core.security import verify_password, create_access_token, get_password_hash
 from app.core.dependencies import get_theme_lang
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -37,6 +39,36 @@ async def login(
     response.set_cookie("lang", user.language, max_age=86400)
     response.set_cookie("theme", user.theme, max_age=86400)
     return response
+
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    department: Optional[str] = None
+
+
+@router.post("/register")
+async def register(data: RegisterRequest, db: Session = Depends(get_db)):
+    if len(data.password) < 8:
+        raise HTTPException(status_code=400, detail="كلمة المرور يجب أن تكون ٨ أحرف على الأقل")
+    existing = db.query(User).filter(User.email == data.email.lower().strip()).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="البريد الإلكتروني مسجل مسبقاً")
+    user = User(
+        name=data.name.strip(),
+        email=data.email.lower().strip(),
+        hashed_password=get_password_hash(data.password),
+        role=UserRole.VIEWER,
+        department=data.department,
+        is_active=True,
+        language="ar",
+        theme="light",
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return JSONResponse({"message": "تم إنشاء الحساب بنجاح", "user_id": user.id}, status_code=201)
 
 
 @router.get("/logout")
