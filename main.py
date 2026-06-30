@@ -55,10 +55,15 @@ class NoCacheHTMLMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(NoCacheHTMLMiddleware)
+
+# CORS: allow_origins=["*"] is valid ONLY when allow_credentials=False.
+# Cookie-based client auth is same-origin (no CORS applies).
+# Admin API uses Bearer tokens (Authorization header) which does NOT require
+# allow_credentials=True — the wildcard origin covers it correctly.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
