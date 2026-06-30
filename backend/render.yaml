@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: masih-almustanadat-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: DOCIQ_DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      - key: API_BASE_URL
+        value: "https://masih-almustanadat-api.onrender.com"
