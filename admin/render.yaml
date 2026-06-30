@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: masih-almustanadat-admin
+    runtime: docker
+    dockerfilePath: ./admin/Dockerfile
+    envVars:
+      - key: DEBUG
+        value: "false"
