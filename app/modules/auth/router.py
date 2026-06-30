@@ -75,6 +75,10 @@ async def register(data: RegisterRequest, db: Session = Depends(get_db)):
 async def logout():
     response = RedirectResponse(url="/auth/login", status_code=302)
     response.delete_cookie("access_token")
+    # Prevent browser from caching this redirect — ensures back button re-validates with server
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     return response
 
 

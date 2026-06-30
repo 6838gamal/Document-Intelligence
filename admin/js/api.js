@@ -20,7 +20,7 @@ const API = {
     if (res.status === 401) {
       localStorage.removeItem(CONFIG.TOKEN_KEY);
       localStorage.removeItem(CONFIG.USER_KEY);
-      window.location.href = "login.html";
+      window.location.replace("login.html");
       return;
     }
     if (!res.ok) {
@@ -52,14 +52,15 @@ const API = {
 
 function requireAuth() {
   if (!API.token()) {
-    window.location.href = "login.html";
+    window.location.replace("login.html");
   }
 }
 
 function logout() {
   localStorage.removeItem(CONFIG.TOKEN_KEY);
   localStorage.removeItem(CONFIG.USER_KEY);
-  window.location.href = "login.html";
+  // Use replace() so the admin panel is removed from browser history
+  window.location.replace("login.html");
 }
 
 function formatDate(iso) {
