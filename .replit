@@ -40,3 +40,4 @@ externalPort = 80
 
 [userenv.shared]
 API_BASE_URL = "https://masih-almustanadat-api.onrender.com"
+GEMINI_API_KEY = "AIzaSyCAaC7edTLCBiI95prnLYngf9wcN-jf_uw"

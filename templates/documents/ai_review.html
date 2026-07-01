@@ -1,115 +1,345 @@
 {% extends "base.html" %}
 {% block title %}{% if lang == 'ar' %}مراجعة AI{% else %}AI Review{% endif %} - {{ doc.title }}{% endblock %}
 {% block content %}
-<div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">
+
+<!-- BREADCRUMB + STATUS -->
+<div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
   <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;color:var(--text-muted);">
     <a href="/documents" style="color:var(--accent);text-decoration:none;">{% if lang == 'ar' %}المستندات{% else %}Documents{% endif %}</a>
     <i class="fa fa-chevron-{% if dir == 'rtl' %}left{% else %}right{% endif %}" style="font-size:0.7rem;"></i>
-    <a href="/documents/{{ doc.id }}" style="color:var(--accent);text-decoration:none;">{{ doc.title[:30] }}...</a>
+    <a href="/documents/{{ doc.id }}" style="color:var(--accent);text-decoration:none;">{{ doc.title[:35] }}{% if doc.title|length > 35 %}...{% endif %}</a>
     <i class="fa fa-chevron-{% if dir == 'rtl' %}left{% else %}right{% endif %}" style="font-size:0.7rem;"></i>
     <span>{% if lang == 'ar' %}مراجعة AI{% else %}AI Review{% endif %}</span>
   </div>
-  <div style="display:flex;align-items:center;gap:0.75rem;">
-    <span style="padding:0.3rem 0.75rem;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:20px;font-size:0.8rem;font-weight:700;color:#10B981;">
-      <span class="animate-pulse-slow" style="display:inline-block;width:6px;height:6px;background:#10B981;border-radius:50%;margin-{% if dir == 'rtl' %}left{% else %}right{% endif %}:0.4rem;vertical-align:middle;"></span>
-      {% if lang == 'ar' %}معالجة مكتملة{% else %}Processing Complete{% endif %}
+  <div style="display:flex;align-items:center;gap:0.5rem;">
+    {% if doc.status == 'processing' %}
+    <span style="padding:0.3rem 0.75rem;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:20px;font-size:0.8rem;font-weight:700;color:#F59E0B;">
+      <i class="fa fa-spinner fa-spin"></i> {% if lang == 'ar' %}جارٍ المعالجة...{% else %}Processing...{% endif %}
     </span>
+    {% elif doc.extracted_text %}
+    <span style="padding:0.3rem 0.75rem;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:20px;font-size:0.8rem;font-weight:700;color:#10B981;">
+      <i class="fa fa-circle-check"></i> {% if lang == 'ar' %}معالجة مكتملة{% else %}Processing Complete{% endif %}
+    </span>
+    {% else %}
+    <span style="padding:0.3rem 0.75rem;background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.3);border-radius:20px;font-size:0.8rem;font-weight:700;color:var(--text-muted);">
+      <i class="fa fa-clock"></i> {% if lang == 'ar' %}في الانتظار{% else %}Pending{% endif %}
+    </span>
+    {% endif %}
+
+    {% if doc.fraud_risk == 'high' %}
+    <span style="padding:0.3rem 0.75rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:20px;font-size:0.8rem;font-weight:700;color:#EF4444;">
+      <i class="fa fa-triangle-exclamation"></i> {% if lang == 'ar' %}خطر احتيال{% else %}Fraud Risk{% endif %}
+    </span>
+    {% elif doc.fraud_risk == 'medium' %}
+    <span style="padding:0.3rem 0.75rem;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:20px;font-size:0.8rem;font-weight:700;color:#F59E0B;">
+      <i class="fa fa-triangle-exclamation"></i> {% if lang == 'ar' %}تحذير{% else %}Warning{% endif %}
+    </span>
+    {% endif %}
   </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;height:calc(100vh - 180px);">
-  <!-- DOCUMENT VIEWER -->
-  <div class="card" style="display:flex;flex-direction:column;overflow:hidden;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
-      <h3 style="font-weight:700;">{% if lang == 'ar' %}المستند الأصلي{% else %}Original Document{% endif %}</h3>
-      <div style="display:flex;gap:0.5rem;">
-        <button class="btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.8rem;"><i class="fa fa-magnifying-glass-minus"></i></button>
-        <span style="padding:0.3rem 0.6rem;font-size:0.8rem;border:1px solid var(--border);border-radius:6px;">100%</span>
-        <button class="btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.8rem;"><i class="fa fa-magnifying-glass-plus"></i></button>
-      </div>
-    </div>
-    <div style="flex:1;background:var(--bg);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;">
-      <div style="background:white;width:85%;min-height:500px;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:2rem;position:relative;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #1B2A4A;">
-          <div><div style="font-size:0.9rem;font-weight:800;color:#1B2A4A;">{{ doc.title }}</div><div style="font-size:0.7rem;color:#64748B;">{{ doc.category }}</div></div>
-          <div style="font-size:0.7rem;color:#64748B;text-align:{% if dir == 'rtl' %}left{% else %}right{% endif %};">رقم المستند: DOC-{{ doc.id }}<br>التاريخ: {{ doc.created_at.strftime('%Y/%m/%d') if doc.created_at else '' }}</div>
-        </div>
-        <!-- Highlighted extraction areas -->
-        {% if doc.extracted_data %}
-        {% for k, v in doc.extracted_data.items() %}
-        <div style="margin-bottom:0.75rem;padding:0.5rem;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:4px;position:relative;">
-          <div style="font-size:0.65rem;color:#3B82F6;font-weight:700;text-transform:uppercase;">{{ k }}</div>
-          <div style="font-size:0.875rem;color:#1E293B;font-weight:600;">{{ v }}</div>
-        </div>
-        {% endfor %}
-        {% endif %}
-        <div style="margin-top:1rem;height:60px;background:#F1F5F9;border-radius:4px;"></div>
-        <div style="margin-top:0.5rem;height:40px;background:#F1F5F9;border-radius:4px;width:70%;"></div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:1rem;padding-top:1rem;border-top:1px solid var(--border);margin-top:1rem;">
-      <button class="btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.8rem;"><i class="fa fa-chevron-{% if dir == 'rtl' %}right{% else %}left{% endif %}"></i></button>
-      <span style="font-size:0.875rem;">1 / {{ doc.page_count }}</span>
-      <button class="btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.8rem;"><i class="fa fa-chevron-{% if dir == 'rtl' %}left{% else %}right{% endif %}"></i></button>
-    </div>
-  </div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;" x-data="{
+  chatMessages: [],
+  question: '',
+  loading: false,
+  activeTab: 'fields',
+  async sendQuestion() {
+    if(!this.question.trim() || this.loading) return;
+    const q = this.question;
+    this.chatMessages.push({role:'user', text:q});
+    this.question = '';
+    this.loading = true;
+    try {
+      const res = await fetch('/documents/{{ doc.id }}/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({question: q})
+      });
+      const data = await res.json();
+      this.chatMessages.push({role:'ai', text: data.answer || data.error || 'خطأ'});
+    } catch(e) {
+      this.chatMessages.push({role:'ai', text:'حدث خطأ في الاتصال'});
+    }
+    this.loading = false;
+    this.$nextTick(() => {
+      const el = document.getElementById('chatBox');
+      if(el) el.scrollTop = el.scrollHeight;
+    });
+  }
+}">
 
-  <!-- EXTRACTED FIELDS PANEL -->
-  <div style="display:flex;flex-direction:column;gap:1rem;overflow:auto;">
-    <!-- Confidence Score -->
-    <div class="card" style="background:linear-gradient(135deg,rgba(16,185,129,0.08) 0%,transparent 100%);border-color:rgba(16,185,129,0.2);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
-        <h3 style="font-weight:700;">{% if lang == 'ar' %}نتيجة الثقة{% else %}Confidence Score{% endif %}</h3>
-        <span style="font-size:2rem;font-weight:900;color:#10B981;">{{ doc.confidence_score }}%</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:{{ doc.confidence_score }}%;background:#10B981;"></div></div>
-      <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;">{% if lang == 'ar' %}ثقة عالية في البيانات المستخرجة{% else %}High confidence in extracted data{% endif %}</p>
+  <!-- LEFT: DOCUMENT VIEWER -->
+  <div class="card" style="display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 140px);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">
+      <h3 style="font-weight:700;font-size:0.95rem;">
+        <i class="fa fa-file-lines" style="color:var(--accent);margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.4rem;"></i>
+        {% if lang == 'ar' %}المستند الأصلي{% else %}Original Document{% endif %}
+      </h3>
+      {% if has_file %}
+      <a href="/documents/{{ doc.id }}/file" target="_blank" class="btn-secondary" style="padding:0.25rem 0.6rem;font-size:0.78rem;">
+        <i class="fa fa-arrow-up-right-from-square"></i> {% if lang == 'ar' %}فتح{% else %}Open{% endif %}
+      </a>
+      {% endif %}
     </div>
 
-    <!-- Extracted Fields -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-        <h3 style="font-weight:700;">{% if lang == 'ar' %}الحقول المستخرجة{% else %}Extracted Fields{% endif %}</h3>
-        <button class="btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.8rem;"><i class="fa fa-plus"></i> {% if lang == 'ar' %}إضافة{% else %}Add{% endif %}</button>
+    <div style="flex:1;overflow:auto;border-radius:8px;background:var(--bg);">
+      {% if has_file and is_pdf %}
+      <iframe src="/documents/{{ doc.id }}/file" style="width:100%;height:100%;min-height:420px;border:none;border-radius:8px;"></iframe>
+      {% elif has_file and is_image %}
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;min-height:420px;">
+        <img src="/documents/{{ doc.id }}/file" style="max-width:100%;max-height:500px;border-radius:8px;object-fit:contain;" />
       </div>
-      {% if doc.extracted_data %}
-      <div style="display:flex;flex-direction:column;gap:0.75rem;">
-        {% for k, v in doc.extracted_data.items() %}
-        <div style="padding:0.875rem;border-radius:10px;border:1px solid var(--border);background:var(--bg);" x-data="{ editing: false }">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;">
-            <label style="font-size:0.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;">{{ k }}</label>
-            <div style="display:flex;gap:0.4rem;">
-              <span style="width:18px;height:18px;background:rgba(16,185,129,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fa fa-check" style="font-size:0.6rem;color:#10B981;"></i></span>
-              <button @click="editing = !editing" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;"><i class="fa fa-pencil"></i></button>
-            </div>
-          </div>
-          <div x-show="!editing">
-            <span style="font-weight:700;font-size:0.9rem;">{{ v }}</span>
-          </div>
-          <div x-show="editing" x-transition>
-            <input type="text" value="{{ v }}" style="font-weight:700;" />
-          </div>
-        </div>
-        {% endfor %}
-      </div>
+      {% elif doc.extracted_text %}
+      <div style="padding:1.25rem;font-size:0.85rem;line-height:1.7;white-space:pre-wrap;color:var(--text);font-family:monospace;max-height:500px;overflow:auto;">{{ doc.extracted_text[:3000] }}{% if doc.extracted_text|length > 3000 %}<br><br><span style="color:var(--text-muted);">... [{% if lang=='ar'%}النص مقتطع{% else %}text truncated{% endif %}]</span>{% endif %}</div>
       {% else %}
-      <div style="text-align:center;padding:2rem;color:var(--text-muted);">
-        <i class="fa fa-magnifying-glass-chart" style="font-size:2rem;opacity:0.3;margin-bottom:0.5rem;display:block;"></i>
-        <p>{% if lang == 'ar' %}لا توجد بيانات مستخرجة{% else %}No extracted data{% endif %}</p>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--text-muted);">
+        <i class="fa fa-file-circle-question" style="font-size:3rem;opacity:0.3;margin-bottom:1rem;"></i>
+        <p style="font-size:0.875rem;">{% if lang == 'ar' %}لا يوجد ملف أو نص مستخرج بعد{% else %}No file or extracted text yet{% endif %}</p>
+        {% if doc.status == 'processing' %}
+        <p style="font-size:0.8rem;margin-top:0.5rem;">{% if lang == 'ar' %}يتم المعالجة... حدّث الصفحة بعد لحظات{% else %}Processing... refresh the page in a moment{% endif %}</p>
+        {% endif %}
       </div>
       {% endif %}
     </div>
 
-    <!-- Validation Actions -->
-    <div class="card">
-      <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang == 'ar' %}إجراءات التحقق{% else %}Validation Actions{% endif %}</h3>
-      <div style="display:flex;flex-direction:column;gap:0.75rem;">
-        <button class="btn-primary" style="justify-content:center;background:#10B981;"><i class="fa fa-check-double"></i> {% if lang == 'ar' %}تأكيد البيانات وإرسال للاعتماد{% else %}Confirm & Send for Approval{% endif %}</button>
-        <button class="btn-secondary" style="justify-content:center;"><i class="fa fa-rotate"></i> {% if lang == 'ar' %}إعادة المعالجة{% else %}Reprocess{% endif %}</button>
-        <button class="btn-secondary" style="justify-content:center;"><i class="fa fa-user-pen"></i> {% if lang == 'ar' %}مراجعة يدوية{% else %}Manual Review{% endif %}</button>
-        <button class="btn-secondary" style="justify-content:center;color:var(--danger);border-color:var(--danger);"><i class="fa fa-xmark"></i> {% if lang == 'ar' %}رفض المستند{% else %}Reject Document{% endif %}</button>
+    <!-- Page count -->
+    {% if doc.page_count > 1 %}
+    <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);margin-top:0.75rem;font-size:0.85rem;color:var(--text-muted);">
+      <i class="fa fa-file-lines"></i>
+      {{ doc.page_count }} {% if lang == 'ar' %}صفحة{% else %}pages{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RIGHT: ANALYSIS PANEL -->
+  <div style="display:flex;flex-direction:column;gap:1rem;max-height:calc(100vh - 140px);overflow:auto;">
+
+    <!-- Confidence + Type -->
+    <div class="card" style="background:linear-gradient(135deg,rgba(59,130,246,0.05) 0%,transparent 100%);border-color:rgba(59,130,246,0.2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+        <div>
+          <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:0.2rem;">{% if lang == 'ar' %}نوع المستند{% else %}Document Type{% endif %}</div>
+          <div style="font-size:1.1rem;font-weight:800;color:var(--accent);">{{ doc.document_type or doc.category or '—' }}</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:2.2rem;font-weight:900;color:{% if doc.confidence_score >= 80 %}#10B981{% elif doc.confidence_score >= 50 %}#F59E0B{% else %}#EF4444{% endif %};">{{ doc.confidence_score|int }}%</div>
+          <div style="font-size:0.7rem;color:var(--text-muted);">{% if lang == 'ar' %}الثقة{% else %}Confidence{% endif %}</div>
+        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:20px;height:6px;overflow:hidden;">
+        <div style="height:100%;width:{{ doc.confidence_score }}%;background:{% if doc.confidence_score >= 80 %}#10B981{% elif doc.confidence_score >= 50 %}#F59E0B{% else %}#EF4444{% endif %};border-radius:20px;transition:width 1s;"></div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- TABS -->
+    <div class="card" style="flex:1;">
+      <div style="display:flex;gap:0.25rem;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">
+        {% for tab_id, label_ar, label_en, icon in [
+          ('fields','الحقول','Fields','database'),
+          ('summary','الملخص','Summary','align-left'),
+          ('chat','دردشة AI','AI Chat','comments'),
+          ('fraud','المخاطر','Risk','shield'),
+        ] %}
+        <button
+          @click="activeTab = '{{ tab_id }}'"
+          :style="activeTab === '{{ tab_id }}' ? 'background:var(--accent);color:white;' : 'background:var(--bg);color:var(--text-muted);'"
+          style="padding:0.35rem 0.7rem;border:none;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.3rem;transition:0.2s;">
+          <i class="fa fa-{{ icon }}" style="font-size:0.75rem;"></i>
+          {% if lang == 'ar' %}{{ label_ar }}{% else %}{{ label_en }}{% endif %}
+        </button>
+        {% endfor %}
+      </div>
+
+      <!-- TAB: FIELDS -->
+      <div x-show="activeTab === 'fields'" x-transition>
+        {% if doc.extracted_data %}
+        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+          {% for k, v in doc.extracted_data.items() %}
+          {% if v and v != 'غير متوفر' and v != 'N/A' %}
+          <div style="padding:0.75rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);" x-data="{ editing: false, val: {{ v|tojson }} }">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem;">
+              <label style="font-size:0.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;">{{ k }}</label>
+              <div style="display:flex;gap:0.35rem;align-items:center;">
+                <span style="width:16px;height:16px;background:rgba(16,185,129,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                  <i class="fa fa-check" style="font-size:0.55rem;color:#10B981;"></i>
+                </span>
+                <button @click="editing = !editing" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.75rem;padding:0.1rem 0.25rem;">
+                  <i class="fa fa-pencil"></i>
+                </button>
+              </div>
+            </div>
+            <div x-show="!editing" style="font-weight:700;font-size:0.875rem;" x-text="val"></div>
+            <div x-show="editing" x-transition>
+              <input type="text" x-model="val" style="width:100%;padding:0.3rem;font-size:0.875rem;font-weight:700;border:1px solid var(--accent);border-radius:4px;background:var(--card);color:var(--text);" />
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:2rem;color:var(--text-muted);">
+          <i class="fa fa-magnifying-glass-chart" style="font-size:2.5rem;opacity:0.25;display:block;margin-bottom:0.75rem;"></i>
+          <p style="font-size:0.875rem;">{% if lang == 'ar' %}لا توجد حقول مستخرجة بعد{% else %}No fields extracted yet{% endif %}</p>
+          {% if doc.file_uuid %}
+          <button onclick="reprocess()" class="btn-primary" style="margin-top:0.75rem;font-size:0.8rem;">
+            <i class="fa fa-rotate"></i> {% if lang == 'ar' %}تحليل الآن{% else %}Analyze Now{% endif %}
+          </button>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- TAB: SUMMARY -->
+      <div x-show="activeTab === 'summary'" x-transition>
+        {% if doc.summary %}
+        <div style="padding:1rem;background:var(--bg);border-radius:10px;line-height:1.8;font-size:0.875rem;color:var(--text);">
+          {{ doc.summary }}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:2rem;color:var(--text-muted);">
+          <i class="fa fa-align-left" style="font-size:2.5rem;opacity:0.25;display:block;margin-bottom:0.75rem;"></i>
+          <p style="font-size:0.875rem;">{% if lang == 'ar' %}لا يوجد ملخص بعد{% else %}No summary yet{% endif %}</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- TAB: CHAT -->
+      <div x-show="activeTab === 'chat'" x-transition style="display:flex;flex-direction:column;gap:0.75rem;">
+        <div id="chatBox" style="min-height:200px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:0.5rem;padding:0.5rem;background:var(--bg);border-radius:8px;">
+          <template x-if="chatMessages.length === 0">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;color:var(--text-muted);">
+              <i class="fa fa-comments" style="font-size:2rem;opacity:0.25;margin-bottom:0.5rem;"></i>
+              <p style="font-size:0.8rem;">{% if lang == 'ar' %}اسأل أي سؤال عن محتوى المستند{% else %}Ask anything about this document{% endif %}</p>
+            </div>
+          </template>
+          <template x-for="msg in chatMessages" :key="msg.text">
+            <div :style="msg.role === 'user' ? 'align-self:flex-end;background:var(--accent);color:white;' : 'align-self:flex-start;background:var(--card);border:1px solid var(--border);'"
+                 style="padding:0.6rem 0.9rem;border-radius:12px;max-width:90%;font-size:0.85rem;line-height:1.5;">
+              <template x-if="msg.role === 'ai'">
+                <span style="font-size:0.7rem;color:var(--text-muted);display:block;margin-bottom:0.2rem;font-weight:700;">
+                  <i class="fa fa-robot"></i> Gemini AI
+                </span>
+              </template>
+              <span x-text="msg.text" style="white-space:pre-wrap;"></span>
+            </div>
+          </template>
+          <template x-if="loading">
+            <div style="align-self:flex-start;padding:0.6rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:12px;font-size:0.85rem;color:var(--text-muted);">
+              <i class="fa fa-spinner fa-spin"></i> {% if lang == 'ar' %}يفكر...{% else %}Thinking...{% endif %}
+            </div>
+          </template>
+        </div>
+
+        <div style="display:flex;gap:0.5rem;">
+          <input
+            type="text"
+            x-model="question"
+            @keydown.enter="sendQuestion()"
+            placeholder="{% if lang == 'ar' %}اسأل عن محتوى المستند...{% else %}Ask about document content...{% endif %}"
+            style="flex:1;padding:0.5rem 0.75rem;font-size:0.875rem;"
+            :disabled="loading"
+          />
+          <button @click="sendQuestion()" class="btn-primary" :disabled="loading || !question.trim()" style="padding:0.5rem 0.9rem;">
+            <i class="fa fa-paper-plane"></i>
+          </button>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+          {% for q_ar, q_en in [
+            ('ما هو موضوع هذا المستند؟','What is this document about?'),
+            ('ما هي الأطراف المعنية؟','Who are the parties involved?'),
+            ('ما هي المبالغ المذكورة؟','What amounts are mentioned?'),
+            ('ما هي التواريخ الرئيسية؟','What are the key dates?'),
+          ] %}
+          <button
+            @click="question = '{% if lang=='ar' %}{{ q_ar }}{% else %}{{ q_en }}{% endif %}'; sendQuestion()"
+            style="padding:0.25rem 0.6rem;font-size:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--text-muted);transition:0.15s;"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'"
+            :disabled="loading">
+            {% if lang == 'ar' %}{{ q_ar }}{% else %}{{ q_en }}{% endif %}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- TAB: FRAUD/RISK -->
+      <div x-show="activeTab === 'fraud'" x-transition>
+        <div style="display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:10px;margin-bottom:0.75rem;
+          {% if doc.fraud_risk == 'high' %}background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);
+          {% elif doc.fraud_risk == 'medium' %}background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);
+          {% elif doc.fraud_risk == 'low' %}background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);
+          {% else %}background:var(--bg);border:1px solid var(--border);{% endif %}">
+          <div style="font-size:2rem;">
+            {% if doc.fraud_risk == 'high' %}🔴
+            {% elif doc.fraud_risk == 'medium' %}🟡
+            {% elif doc.fraud_risk == 'low' %}🟢
+            {% else %}⚪{% endif %}
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:1rem;">
+              {% if doc.fraud_risk == 'high' %}{% if lang=='ar'%}خطر عالي{% else %}High Risk{% endif %}
+              {% elif doc.fraud_risk == 'medium' %}{% if lang=='ar'%}خطر متوسط{% else %}Medium Risk{% endif %}
+              {% elif doc.fraud_risk == 'low' %}{% if lang=='ar'%}خطر منخفض{% else %}Low Risk{% endif %}
+              {% else %}{% if lang=='ar'%}غير محدد{% else %}Unknown{% endif %}{% endif %}
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-muted);">{% if lang=='ar'%}مستوى خطر الاحتيال{% else %}Fraud risk level{% endif %}</div>
+          </div>
+        </div>
+        {% if not doc.extracted_text %}
+        <p style="font-size:0.85rem;color:var(--text-muted);">{% if lang=='ar'%}سيتم تحليل المخاطر بعد استخراج النص{% else %}Risk analysis will run after text extraction{% endif %}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="card">
+      <h3 style="font-weight:700;margin-bottom:0.75rem;font-size:0.9rem;">{% if lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</h3>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <form method="POST" action="/documents/{{ doc.id }}/send-approval">
+          <button type="submit" class="btn-primary" style="width:100%;justify-content:center;background:#10B981;">
+            <i class="fa fa-check-double"></i> {% if lang == 'ar' %}إرسال للاعتماد{% else %}Send for Approval{% endif %}
+          </button>
+        </form>
+        <button onclick="reprocess()" class="btn-secondary" style="width:100%;justify-content:center;" id="reprocessBtn">
+          <i class="fa fa-rotate"></i> {% if lang == 'ar' %}إعادة التحليل بـ AI{% else %}Re-analyze with AI{% endif %}
+        </button>
+        <form method="POST" action="/documents/{{ doc.id }}/approve" style="display:none;" id="approveForm">
+          <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
+            <i class="fa fa-thumbs-up"></i> {% if lang == 'ar' %}اعتماد{% else %}Approve{% endif %}
+          </button>
+        </form>
+        <form method="POST" action="/documents/{{ doc.id }}/reject">
+          <button type="submit" class="btn-secondary" style="width:100%;justify-content:center;color:var(--danger);border-color:var(--danger);">
+            <i class="fa fa-xmark"></i> {% if lang == 'ar' %}رفض{% else %}Reject{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div><!-- END RIGHT -->
+</div><!-- END GRID -->
+
+<script>
+async function reprocess() {
+  const btn = document.getElementById('reprocessBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> {% if lang == "ar" %}جارٍ التحليل...{% else %}Analyzing...{% endif %}';
+  try {
+    const res = await fetch('/documents/{{ doc.id }}/process', { method: 'POST' });
+    const data = await res.json();
+    if (data.status === 'processing') {
+      btn.innerHTML = '<i class="fa fa-clock"></i> {% if lang == "ar" %}يعالج في الخلفية — حدّث الصفحة{% else %}Processing — refresh page{% endif %}';
+      setTimeout(() => location.reload(), 8000);
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa fa-rotate"></i> {% if lang == "ar" %}إعادة التحليل بـ AI{% else %}Re-analyze with AI{% endif %}';
+  }
+}
+
+{% if doc.status == 'processing' %}
+setTimeout(() => location.reload(), 6000);
+{% endif %}
+</script>
 {% endblock %}

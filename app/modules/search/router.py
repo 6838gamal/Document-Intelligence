@@ -13,20 +13,59 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("", response_class=HTMLResponse)
-async def search_page(request: Request, db: Session = Depends(get_db), user=Depends(require_auth),
-                      q: Optional[str] = None):
+async def search_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    user=Depends(require_auth),
+    q: Optional[str] = None,
+    search_type: Optional[str] = "all",
+):
     tl = get_theme_lang(request)
     doc_results = []
     kb_results = []
-    if q:
-        doc_results = db.query(Document).filter(
-            or_(Document.title.ilike(f"%{q}%"), Document.category.ilike(f"%{q}%"))
-        ).limit(10).all()
-        kb_results = db.query(KnowledgeArticle).filter(
-            or_(KnowledgeArticle.title.ilike(f"%{q}%"), KnowledgeArticle.content.ilike(f"%{q}%"))
-        ).limit(5).all()
+
+    if q and q.strip():
+        q = q.strip()
+
+        if search_type in ("all", "documents"):
+            doc_results = (
+                db.query(Document)
+                .filter(
+                    Document.is_deleted == False,
+                    or_(
+                        Document.title.ilike(f"%{q}%"),
+                        Document.category.ilike(f"%{q}%"),
+                        Document.document_type.ilike(f"%{q}%"),
+                        Document.summary.ilike(f"%{q}%"),
+                        Document.extracted_text.ilike(f"%{q}%"),
+                    ),
+                )
+                .order_by(Document.created_at.desc())
+                .limit(20)
+                .all()
+            )
+
+        if search_type in ("all", "knowledge"):
+            kb_results = (
+                db.query(KnowledgeArticle)
+                .filter(
+                    KnowledgeArticle.is_published == True,
+                    or_(
+                        KnowledgeArticle.title.ilike(f"%{q}%"),
+                        KnowledgeArticle.content.ilike(f"%{q}%"),
+                    ),
+                )
+                .limit(10)
+                .all()
+            )
+
     return templates.TemplateResponse("search/index.html", {
-        "request": request, "user": user,
-        "query": q, "doc_results": doc_results, "kb_results": kb_results,
-        "total_results": len(doc_results) + len(kb_results), **tl
+        "request": request,
+        "user": user,
+        "query": q,
+        "search_type": search_type,
+        "doc_results": doc_results,
+        "kb_results": kb_results,
+        "total_results": len(doc_results) + len(kb_results),
+        **tl,
     })

@@ -15,9 +15,25 @@ from app.core.seed import seed_database
 logger = logging.getLogger(__name__)
 
 
+def _run_schema_migrations():
+    """Safely add new columns to existing tables without data loss."""
+    migrations = [
+        "ALTER TABLE documents ADD COLUMN extracted_text TEXT",
+        "ALTER TABLE documents ADD COLUMN document_type VARCHAR(100)",
+        "ALTER TABLE documents ADD COLUMN fraud_risk VARCHAR(20) DEFAULT 'unknown'",
+        "ALTER TABLE documents ADD COLUMN file_uuid VARCHAR(200)",
+    ]
+    with engine.connect() as conn:
+        for sql in migrations:
+            try:
+                conn.execute(_sa_text(sql))
+                conn.commit()
+            except Exception:
+                pass  # Column already exists — safe to ignore
+
+
 async def _db_keepalive():
-    """Server-side task: ping DB every 7 min to keep server & connection alive.
-    Runs independently of any browser — ensures 24/7 uptime on Render."""
+    """Ping DB every 7 min to keep connection alive."""
     while True:
         await asyncio.sleep(7 * 60)
         try:
@@ -28,9 +44,11 @@ async def _db_keepalive():
                 finally:
                     db.close()
             await asyncio.to_thread(_ping)
-            logger.info("[keepalive] ✓ DB ping OK — server awake")
+            logger.info("[keepalive] ✓ DB ping OK")
         except Exception as exc:
             logger.warning(f"[keepalive] ✗ DB ping failed: {exc}")
+
+
 from app.modules.auth.router import router as auth_router
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.documents.router import router as documents_router
@@ -54,15 +72,18 @@ from app.modules.admin_api.router import router as admin_api_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     models.Base.metadata.create_all(bind=engine)
+    _run_schema_migrations()
     db = SessionLocal()
     try:
         seed_database(db)
     finally:
         db.close()
 
-    # Start server-side 24/7 keepalive — independent of any browser session
+    # Ensure uploads directory exists
+    os.makedirs("uploads", exist_ok=True)
+
     _task = asyncio.create_task(_db_keepalive())
-    logger.info("[keepalive] Background DB keepalive started (every 7 min)")
+    logger.info("[keepalive] Background DB keepalive started")
     yield
     _task.cancel()
     try:
@@ -71,11 +92,10 @@ async def lifespan(app: FastAPI):
         pass
 
 
-app = FastAPI(title="Document Intelligence Platform", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Document Intelligence Platform", version="2.0.0", lifespan=lifespan)
 
 
 class NoCacheHTMLMiddleware(BaseHTTPMiddleware):
-    """Prevent browser from caching HTML pages so back-button after logout re-fetches from server."""
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         content_type = response.headers.get("content-type", "")
@@ -87,11 +107,6 @@ class NoCacheHTMLMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(NoCacheHTMLMiddleware)
-
-# CORS: allow_origins=["*"] is valid ONLY when allow_credentials=False.
-# Cookie-based client auth is same-origin (no CORS applies).
-# Admin API uses Bearer tokens (Authorization header) which does NOT require
-# allow_credentials=True — the wildcard origin covers it correctly.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -130,8 +145,6 @@ async def root():
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
-    # Browsers request this even when <link rel="icon"> is set in HTML.
-    # Return a minimal SVG so the server logs stay clean (no 404 noise).
     svg = (
         b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
         b'<rect width="32" height="32" rx="8" fill="#2563eb"/>'
