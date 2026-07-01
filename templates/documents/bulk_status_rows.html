@@ -1,0 +1,126 @@
+<div id="status-rows" data-done="{{ done }}" data-total="{{ total }}"
+  {% if not all_done %}
+  hx-get="/documents/bulk-status-poll?ids={{ ids }}"
+  hx-trigger="every 3s"
+  hx-target="#status-rows"
+  hx-swap="outerHTML"
+  {% endif %}>
+
+  {% for doc in docs %}
+  {% set is_processing = doc.status in ['processing', 'Processing'] %}
+  {% set is_done = doc.extracted_text %}
+  {% set is_error = doc.status == 'uploaded' and not is_processing and not is_done %}
+
+  <div style="display:flex;align-items:center;gap:1rem;padding:0.875rem 0;border-bottom:1px solid var(--border);transition:0.3s;"
+       {% if not loop.last %}{% else %}style="border-bottom:none"{% endif %}>
+
+    <!-- Index -->
+    <div style="width:28px;height:28px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--text-muted);flex-shrink:0;">
+      {{ loop.index }}
+    </div>
+
+    <!-- File type icon -->
+    <div style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      {% if doc.file_type == 'PDF' %}background:rgba(239,68,68,0.1);
+      {% elif doc.file_type in ['PNG','JPG','JPEG','WEBP'] %}background:rgba(139,92,246,0.1);
+      {% elif doc.file_type == 'DOCX' %}background:rgba(59,130,246,0.1);
+      {% elif doc.file_type == 'XLSX' %}background:rgba(16,185,129,0.1);
+      {% else %}background:rgba(107,114,128,0.1);{% endif %}">
+      <i class="fa {% if doc.file_type == 'PDF' %}fa-file-pdf{% elif doc.file_type in ['PNG','JPG','JPEG','WEBP'] %}fa-image{% elif doc.file_type == 'DOCX' %}fa-file-word{% elif doc.file_type == 'XLSX' %}fa-file-excel{% else %}fa-file-lines{% endif %}"
+         style="{% if doc.file_type == 'PDF' %}color:#EF4444{% elif doc.file_type in ['PNG','JPG','JPEG','WEBP'] %}color:#8B5CF6{% elif doc.file_type == 'DOCX' %}color:#3B82F6{% elif doc.file_type == 'XLSX' %}color:#10B981{% else %}color:#6B7280{% endif %}"></i>
+    </div>
+
+    <!-- File info -->
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:600;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        {{ doc.title }}
+      </div>
+      <div style="font-size:0.75rem;color:var(--text-muted);display:flex;align-items:center;gap:0.5rem;margin-top:0.15rem;">
+        <span>{{ doc.file_name }}</span>
+        {% if doc.file_size %}
+        <span>•</span>
+        <span>{{ "%.1f"|format(doc.file_size/1024/1024) }} MB</span>
+        {% endif %}
+        {% if doc.document_type %}
+        <span>•</span>
+        <span style="color:var(--accent);font-weight:600;">{{ doc.document_type }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Processing progress bar (only while processing) -->
+      {% if is_processing %}
+      <div style="margin-top:0.5rem;background:var(--border);border-radius:20px;height:4px;overflow:hidden;width:100%;">
+        <div style="height:100%;background:var(--accent);border-radius:20px;animation:indeterminate 1.5s ease-in-out infinite;"></div>
+      </div>
+      {% endif %}
+
+      <!-- Results summary (when done) -->
+      {% if is_done %}
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.4rem;">
+        {% if doc.confidence_score %}
+        <span style="padding:0.1rem 0.5rem;background:rgba(16,185,129,0.1);color:#10B981;border-radius:20px;font-size:0.7rem;font-weight:700;">
+          {{ doc.confidence_score|int }}% {% if lang=='ar'%}ثقة{% else %}confidence{% endif %}
+        </span>
+        {% endif %}
+        {% if doc.fraud_risk %}
+        <span style="padding:0.1rem 0.5rem;border-radius:20px;font-size:0.7rem;font-weight:700;
+          {% if doc.fraud_risk == 'high' %}background:rgba(239,68,68,0.1);color:#EF4444;
+          {% elif doc.fraud_risk == 'medium' %}background:rgba(245,158,11,0.1);color:#F59E0B;
+          {% else %}background:rgba(16,185,129,0.1);color:#10B981;{% endif %}">
+          {% if doc.fraud_risk == 'high' %}⚠️{% elif doc.fraud_risk == 'medium' %}🟡{% else %}✅{% endif %}
+          {{ doc.fraud_risk }}
+        </span>
+        {% endif %}
+        {% if doc.page_count > 1 %}
+        <span style="padding:0.1rem 0.5rem;background:rgba(99,102,241,0.1);color:#6366F1;border-radius:20px;font-size:0.7rem;font-weight:700;">
+          {{ doc.page_count }} {% if lang=='ar'%}ص{% else %}pg{% endif %}
+        </span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Status badge -->
+    <div style="flex-shrink:0;text-align:center;min-width:100px;">
+      {% if is_processing %}
+      <div style="padding:0.3rem 0.75rem;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:20px;font-size:0.78rem;font-weight:700;color:#F59E0B;display:inline-flex;align-items:center;gap:0.35rem;">
+        <i class="fa fa-spinner fa-spin" style="font-size:0.7rem;"></i>
+        {% if lang=='ar'%}يعالَج{% else %}Processing{% endif %}
+      </div>
+      {% elif is_done %}
+      <div style="padding:0.3rem 0.75rem;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:20px;font-size:0.78rem;font-weight:700;color:#10B981;display:inline-flex;align-items:center;gap:0.35rem;">
+        <i class="fa fa-circle-check" style="font-size:0.7rem;"></i>
+        {% if lang=='ar'%}مكتمل{% else %}Done{% endif %}
+      </div>
+      {% else %}
+      <div style="padding:0.3rem 0.75rem;background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.2);border-radius:20px;font-size:0.78rem;font-weight:700;color:var(--text-muted);display:inline-flex;align-items:center;gap:0.35rem;">
+        <i class="fa fa-clock" style="font-size:0.7rem;"></i>
+        {% if lang=='ar'%}انتظار{% else %}Queued{% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Action links -->
+    <div style="flex-shrink:0;display:flex;gap:0.4rem;">
+      {% if is_done %}
+      <a href="/documents/{{ doc.id }}/review" class="btn-primary" style="padding:0.3rem 0.6rem;font-size:0.78rem;white-space:nowrap;">
+        <i class="fa fa-robot"></i> {% if lang=='ar'%}مراجعة AI{% else %}AI Review{% endif %}
+      </a>
+      {% else %}
+      <button disabled class="btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.78rem;opacity:0.4;cursor:not-allowed;">
+        <i class="fa fa-robot"></i> {% if lang=='ar'%}مراجعة AI{% else %}AI Review{% endif %}
+      </button>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<style>
+@keyframes indeterminate {
+  0% { width: 0; margin-left: 0; }
+  50% { width: 60%; margin-left: 20%; }
+  100% { width: 0; margin-left: 100%; }
+}
+</style>

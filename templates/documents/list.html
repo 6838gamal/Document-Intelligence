@@ -6,6 +6,7 @@
     <h1 style="font-size:1.5rem;font-weight:800;">{% if lang == 'ar' %}إدارة المستندات{% else %}Document Management{% endif %}</h1>
     <p style="color:var(--text-muted);font-size:0.875rem;">{{ total }} {% if lang == 'ar' %}مستند{% else %}documents{% endif %}</p>
   </div>
+  <a href="/documents/bulk-upload" class="btn-secondary" style="font-size:0.875rem;"><i class="fa fa-layer-group"></i> {% if lang == 'ar' %}رفع جماعي{% else %}Bulk Upload{% endif %}</a>
   <a href="/documents/upload" class="btn-primary"><i class="fa fa-cloud-arrow-up"></i> {% if lang == 'ar' %}رفع مستند{% else %}Upload Document{% endif %}</a>
 </div>
 

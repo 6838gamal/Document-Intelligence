@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}تتبع المعالجة{% else %}Processing Status{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;">
+
+  <!-- HEADER -->
+  <div style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div>
+      <h1 style="font-size:1.4rem;font-weight:800;">
+        <i class="fa fa-brain" style="color:var(--accent);margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.5rem;"></i>
+        {% if lang=='ar'%}تحليل AI للمستندات{% else %}AI Document Analysis{% endif %}
+      </h1>
+      <p style="color:var(--text-muted);font-size:0.875rem;">
+        {% if lang=='ar'%}يتم معالجة ملفاتك بالذكاء الاصطناعي في الخلفية{% else %}Your files are being processed by AI in the background{% endif %}
+      </p>
+    </div>
+    {% if all_done %}
+    <a href="/documents" class="btn-primary">
+      <i class="fa fa-folder-open"></i>
+      {% if lang=='ar'%}عرض المستندات{% else %}View Documents{% endif %}
+    </a>
+    {% else %}
+    <a href="/documents/bulk-upload" class="btn-secondary" style="font-size:0.85rem;">
+      <i class="fa fa-plus"></i>
+      {% if lang=='ar'%}رفع المزيد{% else %}Upload More{% endif %}
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- PROGRESS OVERVIEW -->
+  <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,rgba(59,130,246,0.06) 0%,transparent 100%);border-color:rgba(59,130,246,0.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.25rem;">{% if lang=='ar'%}تقدم المعالجة{% else %}Processing Progress{% endif %}</div>
+        <div style="font-size:1.75rem;font-weight:900;">
+          <span id="done-count">{{ done }}</span>/<span id="total-count">{{ total }}</span>
+          <span style="font-size:0.875rem;font-weight:600;color:var(--text-muted);margin-{% if dir=='rtl'%}right{% else %}left{% endif %}:0.5rem;">{% if lang=='ar'%}مستند{% else %}documents{% endif %}</span>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        {% if all_done %}
+        <div style="width:64px;height:64px;background:rgba(16,185,129,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #10B981;">
+          <i class="fa fa-check" style="font-size:1.5rem;color:#10B981;"></i>
+        </div>
+        {% else %}
+        <div style="width:64px;height:64px;background:rgba(59,130,246,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid var(--accent);border-top-color:transparent;animation:spin 1s linear infinite;">
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="progress-bar-wrap" style="background:var(--bg);border-radius:20px;height:10px;overflow:hidden;">
+      <div id="progress-bar"
+           style="height:100%;border-radius:20px;transition:width 0.5s;background:linear-gradient(90deg,var(--accent),#10B981);width:{{ (done/total*100)|int if total else 0 }}%;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:0.5rem;font-size:0.78rem;color:var(--text-muted);">
+      <span>{{ (done/total*100)|int if total else 0 }}%</span>
+      {% if not all_done %}
+      <span id="eta-text">
+        <i class="fa fa-spinner fa-spin"></i>
+        {% if lang=='ar'%}يُعالَج...{% else %}Processing...{% endif %}
+      </span>
+      {% else %}
+      <span style="color:#10B981;font-weight:700;">
+        <i class="fa fa-circle-check"></i>
+        {% if lang=='ar'%}اكتمل جميعها!{% else %}All done!{% endif %}
+      </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- DOCUMENT STATUS TABLE (HTMX polling target) -->
+  <div class="card" style="overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h3 style="font-weight:700;">{% if lang=='ar'%}حالة كل مستند{% else %}Per-document Status{% endif %}</h3>
+      {% if not all_done %}
+      <span style="font-size:0.78rem;color:var(--text-muted);">
+        <i class="fa fa-rotate fa-spin"></i> {% if lang=='ar'%}يتحدث كل 3 ثوانٍ{% else %}Auto-refreshing every 3s{% endif %}
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- POLLING TARGET -->
+    <div id="status-rows"
+      {% if not all_done %}
+      hx-get="/documents/bulk-status-poll?ids={{ ids }}"
+      hx-trigger="every 3s"
+      hx-target="#status-rows"
+      hx-swap="outerHTML"
+      {% endif %}>
+      {% include "documents/bulk_status_rows.html" %}
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  {% if all_done %}
+  <div style="margin-top:1.25rem;display:flex;gap:0.75rem;justify-content:flex-end;">
+    <a href="/documents/bulk-upload" class="btn-secondary">
+      <i class="fa fa-layer-group"></i> {% if lang=='ar'%}رفع دفعة جديدة{% else %}Upload Another Batch{% endif %}
+    </a>
+    <a href="/documents" class="btn-primary">
+      <i class="fa fa-folder-open"></i> {% if lang=='ar'%}عرض جميع المستندات{% else %}View All Documents{% endif %}
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<!-- Update progress bar and counts via HTMX event -->
+<script>
+document.body.addEventListener('htmx:afterSwap', function(e) {
+  if (e.detail.target && e.detail.target.id === 'status-rows') {
+    const done = parseInt(document.getElementById('status-rows').dataset.done || '0');
+    const total = parseInt(document.getElementById('status-rows').dataset.total || '1');
+    const pct = Math.round(done / total * 100);
+    const bar = document.getElementById('progress-bar');
+    const doneEl = document.getElementById('done-count');
+    const etaEl = document.getElementById('eta-text');
+    if (bar) bar.style.width = pct + '%';
+    if (doneEl) doneEl.textContent = done;
+    if (done >= total && etaEl) {
+      etaEl.innerHTML = '<span style="color:#10B981;font-weight:700;"><i class="fa fa-circle-check"></i> {% if lang=="ar"%}اكتمل جميعها!{% else %}All done!{% endif %}</span>';
+    }
+  }
+});
+</script>
+{% endblock %}

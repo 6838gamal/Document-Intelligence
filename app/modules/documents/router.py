@@ -3,7 +3,7 @@ import uuid
 import asyncio
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, Request, Depends, Form, UploadFile, File, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
@@ -395,6 +395,120 @@ async def delete_document(
         db.add(log)
         db.commit()
     return RedirectResponse(url="/documents", status_code=302)
+
+
+@router.get("/bulk-upload", response_class=HTMLResponse)
+async def bulk_upload_page(request: Request, user=Depends(require_auth)):
+    tl = get_theme_lang(request)
+    return templates.TemplateResponse("documents/bulk_upload.html", {"request": request, "user": user, **tl})
+
+
+@router.post("/bulk-upload")
+async def bulk_upload_documents(
+    request: Request,
+    category: str = Form(...),
+    files: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    user=Depends(require_auth),
+):
+    tl = get_theme_lang(request)
+    if not files or all(not f.filename for f in files):
+        return templates.TemplateResponse("documents/bulk_upload.html", {
+            "request": request, "user": user,
+            "error": "يرجى تحديد ملف واحد على الأقل" if tl.get("lang") == "ar" else "Please select at least one file",
+            **tl,
+        }, status_code=400)
+
+    doc_ids = []
+    errors = []
+
+    for file in files:
+        if not file.filename:
+            continue
+        ext = Path(file.filename).suffix.lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            errors.append(f"{file.filename}: نوع الملف غير مدعوم")
+            continue
+
+        content = await file.read()
+        if len(content) > MAX_SIZE_MB * 1024 * 1024:
+            errors.append(f"{file.filename}: يتجاوز {MAX_SIZE_MB}MB")
+            continue
+
+        file_uuid_val = str(uuid.uuid4())
+        saved_path = UPLOADS_DIR / f"{file_uuid_val}{ext}"
+        saved_path.write_bytes(content)
+
+        title = Path(file.filename).stem.replace("_", " ").replace("-", " ")
+        doc = Document(
+            title=title,
+            category=category,
+            file_name=file.filename,
+            file_uuid=file_uuid_val,
+            file_type=ext.lstrip(".").upper(),
+            file_size=len(content),
+            file_path=str(saved_path),
+            status=DocumentStatus.PROCESSING,
+            confidence_score=0.0,
+            uploader_id=user.id,
+            page_count=1,
+        )
+        db.add(doc)
+        db.flush()
+        doc_ids.append((doc.id, content, file.filename, title))
+
+    db.commit()
+
+    for doc_id, content, filename, title in doc_ids:
+        asyncio.create_task(
+            asyncio.to_thread(_run_ai_pipeline, doc_id, content, filename, title)
+        )
+
+    ids_param = ",".join(str(d[0]) for d in doc_ids)
+    return RedirectResponse(url=f"/documents/bulk-status?ids={ids_param}", status_code=302)
+
+
+@router.get("/bulk-status", response_class=HTMLResponse)
+async def bulk_status_page(
+    request: Request,
+    ids: str = Query(""),
+    db: Session = Depends(get_db),
+    user=Depends(require_auth),
+):
+    tl = get_theme_lang(request)
+    doc_ids = [int(i) for i in ids.split(",") if i.strip().isdigit()]
+    docs = db.query(Document).filter(Document.id.in_(doc_ids)).all() if doc_ids else []
+    docs_sorted = sorted(docs, key=lambda d: doc_ids.index(d.id) if d.id in doc_ids else 999)
+    done = sum(1 for d in docs_sorted if d.status not in (DocumentStatus.PROCESSING, "processing"))
+    return templates.TemplateResponse("documents/bulk_status.html", {
+        "request": request, "user": user,
+        "docs": docs_sorted, "ids": ids,
+        "done": done, "total": len(docs_sorted),
+        "all_done": done == len(docs_sorted),
+        **tl,
+    })
+
+
+@router.get("/bulk-status-poll", response_class=HTMLResponse)
+async def bulk_status_poll(
+    request: Request,
+    ids: str = Query(""),
+    db: Session = Depends(get_db),
+    user=Depends(require_auth),
+):
+    """HTMX polling endpoint — returns only the status rows HTML partial."""
+    tl = get_theme_lang(request)
+    doc_ids = [int(i) for i in ids.split(",") if i.strip().isdigit()]
+    docs = db.query(Document).filter(Document.id.in_(doc_ids)).all() if doc_ids else []
+    docs_sorted = sorted(docs, key=lambda d: doc_ids.index(d.id) if d.id in doc_ids else 999)
+    done = sum(1 for d in docs_sorted if d.status not in (DocumentStatus.PROCESSING, "processing"))
+    return templates.TemplateResponse("documents/bulk_status_rows.html", {
+        "request": request, "user": user,
+        "docs": docs_sorted, "ids": ids,
+        "done": done, "total": len(docs_sorted),
+        "all_done": done == len(docs_sorted),
+        **tl,
+    })
 
 
 @router.get("/{doc_id}", response_class=HTMLResponse)

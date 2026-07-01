@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}{% if lang == 'ar' %}رفع جماعي{% else %}Bulk Upload{% endif %} - DocIQ{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;" x-data="{
+  files: [],
+  dragging: false,
+  addFiles(newFiles) {
+    const allowed = ['pdf','docx','xlsx','txt','png','jpg','jpeg','webp'];
+    for(const f of newFiles) {
+      const ext = f.name.split('.').pop().toLowerCase();
+      if(!allowed.includes(ext)) continue;
+      if(f.size > 50*1024*1024) continue;
+      if(this.files.some(e => e.name===f.name && e.size===f.size)) continue;
+      this.files.push(f);
+    }
+    this.syncInput();
+  },
+  removeFile(idx) {
+    this.files.splice(idx, 1);
+    this.syncInput();
+  },
+  syncInput() {
+    const dt = new DataTransfer();
+    this.files.forEach(f => dt.items.add(f));
+    document.getElementById('bulkFileInput').files = dt.files;
+  },
+  formatSize(bytes) {
+    if(bytes < 1024) return bytes + ' B';
+    if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/1024/1024).toFixed(1) + ' MB';
+  },
+  totalSize() {
+    return this.formatSize(this.files.reduce((s,f) => s+f.size, 0));
+  }
+}">
+
+  <!-- HEADER -->
+  <div style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;">
+        <a href="/documents" style="color:var(--text-muted);font-size:0.85rem;text-decoration:none;">
+          <i class="fa fa-arrow-{% if dir=='rtl'%}right{% else %}left{% endif %}"></i>
+          {% if lang=='ar'%}المستندات{% else %}Documents{% endif %}
+        </a>
+      </div>
+      <h1 style="font-size:1.5rem;font-weight:800;">
+        <i class="fa fa-layer-group" style="color:var(--accent);margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.5rem;"></i>
+        {% if lang=='ar'%}رفع جماعي للمستندات{% else %}Bulk Document Upload{% endif %}
+      </h1>
+      <p style="color:var(--text-muted);font-size:0.875rem;">
+        {% if lang=='ar'%}ارفع حتى 20 ملفاً دفعةً واحدة — يتم تحليلها جميعاً بالذكاء الاصطناعي{% else %}Upload up to 20 files at once — all analyzed automatically by AI{% endif %}
+      </p>
+    </div>
+    <a href="/documents/upload" class="btn-secondary" style="font-size:0.85rem;">
+      <i class="fa fa-file-circle-plus"></i>
+      {% if lang=='ar'%}رفع ملف واحد{% else %}Single Upload{% endif %}
+    </a>
+  </div>
+
+  {% if error %}
+  <div style="padding:0.875rem 1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:10px;color:var(--danger);margin-bottom:1rem;font-size:0.875rem;">
+    <i class="fa fa-triangle-exclamation"></i> {{ error }}
+  </div>
+  {% endif %}
+
+  <form method="POST" action="/documents/bulk-upload" enctype="multipart/form-data" id="bulkForm">
+
+    <!-- DROPZONE -->
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div
+        @dragover.prevent="dragging = true"
+        @dragleave.prevent="dragging = false"
+        @drop.prevent="dragging = false; addFiles($event.dataTransfer.files)"
+        :style="dragging ? 'border-color:var(--accent);background:rgba(59,130,246,0.06);transform:scale(1.01)' : ''"
+        style="border:2px dashed var(--border);border-radius:14px;padding:3.5rem 2rem;text-align:center;transition:all 0.2s;cursor:pointer;"
+        @click="document.getElementById('bulkFileInput').click()">
+
+        <div style="width:72px;height:72px;background:rgba(59,130,246,0.1);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+          <i class="fa fa-cloud-arrow-up" style="font-size:2rem;color:var(--accent);"></i>
+        </div>
+        <h3 style="font-weight:700;margin-bottom:0.5rem;font-size:1.1rem;">
+          {% if lang=='ar'%}اسحب ملفاتك هنا{% else %}Drag your files here{% endif %}
+        </h3>
+        <p style="color:var(--text-muted);font-size:0.875rem;">
+          {% if lang=='ar'%}أو اضغط لاختيار ملفات متعددة{% else %}or click to browse multiple files{% endif %}
+        </p>
+        <div style="display:flex;justify-content:center;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
+          {% for fmt, color in [('PDF','#EF4444'),('DOCX','#3B82F6'),('XLSX','#10B981'),('TXT','#6B7280'),('PNG','#8B5CF6'),('JPG','#F59E0B')] %}
+          <span style="padding:0.2rem 0.6rem;background:{{ color }}18;color:{{ color }};border:1px solid {{ color }}30;border-radius:20px;font-size:0.72rem;font-weight:700;">{{ fmt }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <input
+        id="bulkFileInput"
+        name="files"
+        type="file"
+        multiple
+        accept=".pdf,.docx,.xlsx,.txt,.png,.jpg,.jpeg,.webp"
+        style="display:none;"
+        @change="addFiles($event.target.files)"
+      />
+    </div>
+
+    <!-- FILE LIST -->
+    <div class="card" style="margin-bottom:1.25rem;" x-show="files.length > 0" x-transition>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <h3 style="font-weight:700;">
+          <i class="fa fa-list-check" style="color:var(--accent);margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.4rem;"></i>
+          {% if lang=='ar'%}الملفات المحددة{% else %}Selected Files{% endif %}
+          <span style="background:var(--accent);color:white;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.75rem;margin-{% if dir=='rtl'%}right{% else %}left{% endif %}:0.4rem;" x-text="files.length"></span>
+        </h3>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <span style="font-size:0.8rem;color:var(--text-muted);">
+            {% if lang=='ar'%}الحجم الكلي:{% else %}Total size:{% endif %}
+            <strong x-text="totalSize()"></strong>
+          </span>
+          <button type="button" @click="files = []; syncInput()" style="font-size:0.8rem;color:var(--danger);background:none;border:none;cursor:pointer;">
+            <i class="fa fa-trash"></i> {% if lang=='ar'%}حذف الكل{% else %}Clear all{% endif %}
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:0.5rem;max-height:320px;overflow-y:auto;">
+        <template x-for="(file, idx) in files" :key="idx">
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;transition:0.15s;"
+               :style="idx % 2 === 0 ? '' : 'background:rgba(0,0,0,0.02)'">
+            <!-- File icon -->
+            <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
+                 :style="file.name.endsWith('.pdf') ? 'background:rgba(239,68,68,0.1)' :
+                         file.name.match(/\.(png|jpg|jpeg|webp)$/) ? 'background:rgba(139,92,246,0.1)' :
+                         file.name.endsWith('.docx') ? 'background:rgba(59,130,246,0.1)' :
+                         'background:rgba(16,185,129,0.1)'">
+              <i class="fa"
+                 :class="file.name.endsWith('.pdf') ? 'fa-file-pdf' :
+                         file.name.match(/\.(png|jpg|jpeg|webp)$/) ? 'fa-image' :
+                         file.name.endsWith('.docx') ? 'fa-file-word' :
+                         file.name.endsWith('.xlsx') ? 'fa-file-excel' : 'fa-file-lines'"
+                 :style="file.name.endsWith('.pdf') ? 'color:#EF4444' :
+                         file.name.match(/\.(png|jpg|jpeg|webp)$/) ? 'color:#8B5CF6' :
+                         file.name.endsWith('.docx') ? 'color:#3B82F6' :
+                         file.name.endsWith('.xlsx') ? 'color:#10B981' : 'color:#6B7280'">
+              </i>
+            </div>
+            <!-- File info -->
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="file.name"></div>
+              <div style="font-size:0.75rem;color:var(--text-muted);" x-text="formatSize(file.size)"></div>
+            </div>
+            <!-- Status badge -->
+            <span style="padding:0.2rem 0.6rem;background:rgba(16,185,129,0.1);color:#10B981;border-radius:20px;font-size:0.72rem;font-weight:700;flex-shrink:0;">
+              <i class="fa fa-check"></i> {% if lang=='ar'%}جاهز{% else %}Ready{% endif %}
+            </span>
+            <!-- Remove button -->
+            <button type="button" @click="removeFile(idx)"
+                    style="background:none;border:none;cursor:pointer;color:var(--text-muted);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0;font-size:0.85rem;transition:0.15s;"
+                    onmouseover="this.style.background='rgba(239,68,68,0.1)';this.style.color='#EF4444'"
+                    onmouseout="this.style.background='none';this.style.color='var(--text-muted)'">
+              <i class="fa fa-xmark"></i>
+            </button>
+          </div>
+        </template>
+      </div>
+
+      <!-- AI features badge -->
+      <div style="margin-top:1rem;padding:0.75rem;background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.12);border-radius:10px;display:flex;align-items:center;gap:0.75rem;">
+        <i class="fa fa-robot" style="color:var(--accent);font-size:1.1rem;"></i>
+        <div style="font-size:0.8rem;color:var(--text-muted);">
+          {% if lang=='ar'%}
+          سيتم لكل ملف: <strong style="color:var(--text);">استخراج النص • تصنيف تلقائي • استخراج حقول • ملخص • كشف احتيال</strong>
+          {% else %}
+          Each file will get: <strong style="color:var(--text);">Text extraction • Auto-classification • Field extraction • Summary • Fraud detection</strong>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- METADATA -->
+    <div class="card" style="margin-bottom:1.25rem;">
+      <h3 style="font-weight:700;margin-bottom:1rem;">{% if lang=='ar'%}الفئة{% else %}Category{% endif %}</h3>
+      <select name="category" required style="width:100%;">
+        <option value="">{% if lang=='ar'%}اختر الفئة{% else %}Select category{% endif %}</option>
+        {% for cat in ['عقود','فواتير','تقارير','مخططات','مواصفات فنية','سياسات','عروض أسعار','محاضر','بطاقات هوية','كشوف حسابات','أوامر شراء','وثائق قانونية','وثائق طبية','أخرى'] %}
+        <option value="{{ cat }}">{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- ACTIONS -->
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+      <a href="/documents" class="btn-secondary"><i class="fa fa-xmark"></i> {% if lang=='ar'%}إلغاء{% else %}Cancel{% endif %}</a>
+      <button type="submit" class="btn-primary"
+              :disabled="files.length === 0"
+              id="submitBtn"
+              onclick="this.innerHTML='<i class=\'fa fa-spinner fa-spin\'></i> {% if lang==\"ar\" %}جارٍ الرفع...{% else %}Uploading...{% endif %}';this.disabled=true;"
+              style="position:relative;">
+        <i class="fa fa-rocket"></i>
+        <span x-text="files.length > 0 ? '{% if lang==\"ar\"%}رفع وتحليل ' + files.length + ' ملف{% else %}Upload & Analyze ' + files.length + ' files{% endif %}' : '{% if lang==\"ar\"%}اختر ملفات أولاً{% else %}Select files first{% endif %}'"></span>
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
