@@ -1,0 +1,376 @@
+أنت Principal Software Engineer وAI Solutions Architect وDocument Intelligence Expert بخبرة في بناء منصات تنافس Google Document AI وAzure Document Intelligence وAmazon Textract وABBYY وUiPath.
+
+لدي مشروع قائم بالفعل في مجال Document Intelligence وOCR ومعالجة المستندات.
+
+مهمتك ليست التخطيط أو اقتراح الأفكار.
+
+مهمتك هي تطوير المشروع الحالي وتحسينه وتوسيعه وتحويله إلى منصة Document Intelligence احترافية جاهزة للشركات والمؤسسات.
+
+---
+
+# قواعد العمل
+
+* لا تكتب خططاً نظرية.
+* لا تقدم اقتراحات عامة فقط.
+* افحص المشروع الحالي بالكامل.
+* حلل البنية الحالية والكود الموجود.
+* اكتشف ما هو موجود وما هو ناقص.
+* لا تعيد بناء ما يعمل بالفعل.
+* قم بتحسين أو استبدال المكونات الضعيفة عند الحاجة.
+* أضف أي ميزة ناقصة من القائمة التالية.
+* حافظ على التوافق مع البنية الحالية.
+* حافظ على الأداء العالي وقابلية التوسع.
+* التزم بأفضل الممارسات البرمجية.
+* التزم بمبادئ Clean Architecture وDomain Driven Design.
+* نفذ الحلول القابلة للإنتاج Production Ready.
+
+---
+
+# التقنيات المستهدفة
+
+* Python
+* FastAPI
+* PostgreSQL
+* Redis
+* Docker
+* Celery أو Dramatiq
+* MinIO أو S3 Compatible Storage
+* Elasticsearch أو OpenSearch
+* Vector Database
+* LLM Integration
+* Multi-Agent Architecture
+
+---
+
+# الهدف النهائي
+
+تحويل المشروع إلى منصة متكاملة تعتمد على:
+
+Scan → Understand → Extract → Search → Automate → Decide
+
+وليس:
+
+Scan → PDF → Share
+
+---
+
+# المرحلة الأولى: تحليل المشروع الحالي
+
+قم بفحص جميع:
+
+* APIs
+* Services
+* Models
+* Database
+* Workers
+* Background Tasks
+* Docker Files
+* Frontend
+* Authentication
+* Authorization
+* Search Components
+* OCR Components
+* AI Components
+
+ثم أنشئ جدولاً يوضح:
+
+* موجود بالكامل
+* موجود جزئياً
+* غير موجود
+* يحتاج تحسين
+* يحتاج إعادة تصميم
+
+---
+
+# الميزات الإلزامية
+
+## Document Acquisition
+
+* Mobile Scanning
+* Web Upload
+* Drag & Drop Upload
+* Batch Upload
+* Multi File Upload
+* Camera Capture
+* Auto Crop
+* Auto Rotate
+* Deskew
+* Perspective Correction
+* Noise Removal
+* Image Enhancement
+* Blur Detection
+* Quality Assessment
+
+---
+
+## OCR & Recognition
+
+* Arabic OCR
+* Multilingual OCR
+* Handwriting Recognition
+* Table Recognition
+* Form Recognition
+* Layout Analysis
+* Key Value Extraction
+* Confidence Scores
+
+---
+
+## Searchable Documents
+
+* Searchable PDF
+* OCR Text Layer
+* PDF/A Support
+* Original Document Preservation
+
+---
+
+## Structured Data Extraction
+
+* Invoice Extraction
+* Receipt Extraction
+* Contract Extraction
+* ID Extraction
+* Passport Extraction
+* Bank Statement Extraction
+* Purchase Order Extraction
+* HR Forms Extraction
+* Medical Forms Extraction
+* Custom Field Extraction
+
+---
+
+## Document Classification
+
+* Invoice
+* Receipt
+* Contract
+* ID
+* Passport
+* Bank Statement
+* HR Document
+* Legal Document
+* Medical Document
+* Logistics Document
+
+---
+
+## Review & Validation
+
+* Confidence Per Field
+* Human Review Workflow
+* Error Highlighting
+* Suggested Corrections
+* Validation Rules
+* Data Quality Checks
+
+---
+
+## Search & Discovery
+
+* Full Text Search
+* Semantic Search
+* Vector Search
+* Metadata Search
+* Similar Document Search
+* Cross Document Search
+
+---
+
+## AI Features
+
+* AI Summarization
+* Executive Summary Generation
+* Chat With Documents
+* Question Answering
+* RAG Knowledge Base
+* Multi Document Reasoning
+* AI Insights
+* Recommendation Engine
+
+---
+
+## Custom Intelligence
+
+* Custom Extractor Builder
+* Custom Templates
+* Custom Validation Rules
+* User Defined Fields
+
+---
+
+## Workflow Automation
+
+* Workflow Builder
+* Rule Engine
+* Approval Flows
+* Event Triggers
+* Email Automation
+* ERP Integration
+* CRM Integration
+* Accounting Integration
+* Google Sheets Integration
+* Webhooks
+
+---
+
+## Enterprise Features
+
+* Multi Tenancy
+* Teams
+* Workspaces
+* RBAC
+* Audit Logs
+* Activity Logs
+* Encryption At Rest
+* Encryption In Transit
+* API Keys
+* SDK
+* SSO
+* White Label
+
+---
+
+## Bulk Processing
+
+* Batch OCR
+* Batch Classification
+* Batch Extraction
+* Queue Processing
+* Priority Queues
+
+---
+
+## Fraud & Validation
+
+* Duplicate Detection
+* Similarity Detection
+* Fraud Indicators
+* Data Consistency Checks
+
+---
+
+## Analytics
+
+* Accuracy Dashboard
+* Processing Dashboard
+* Productivity Dashboard
+* Error Dashboard
+* Cost Dashboard
+* AI Usage Dashboard
+
+---
+
+## Export & Integration
+
+* PDF
+* DOCX
+* XLSX
+* CSV
+* JSON
+* XML
+* REST API
+* GraphQL API (اختياري)
+* Webhooks
+
+---
+
+## Deployment
+
+* Cloud Deployment
+* On-Premise Deployment
+* Hybrid Deployment
+* Docker Support
+* Kubernetes Ready
+
+---
+
+# Multi-Agent Architecture
+
+أنشئ بنية وكلاء متخصصة:
+
+### OCR Agent
+
+مسؤول عن OCR وتحليل الصفحات.
+
+### Classification Agent
+
+مسؤول عن تصنيف المستندات.
+
+### Extraction Agent
+
+مسؤول عن استخراج البيانات المنظمة.
+
+### Validation Agent
+
+مسؤول عن التحقق من الجودة والدقة.
+
+### Search Agent
+
+مسؤول عن البحث الدلالي.
+
+### RAG Agent
+
+مسؤول عن قواعد المعرفة والاسترجاع.
+
+### Workflow Agent
+
+مسؤول عن الأتمتة والتكاملات.
+
+### Analytics Agent
+
+مسؤول عن التحليلات والتقارير.
+
+---
+
+# متطلبات التنفيذ
+
+لكل ميزة يتم تطويرها:
+
+1. تحديد الملفات المتأثرة.
+2. إنشاء الملفات الجديدة عند الحاجة.
+3. تحديث قاعدة البيانات.
+4. إنشاء Migrations.
+5. تحديث Models.
+6. تحديث Services.
+7. تحديث APIs.
+8. تحديث Workers.
+9. تحديث Docker.
+10. تحديث اختبارات الوحدة.
+11. تحديث اختبارات التكامل.
+12. تحديث التوثيق.
+
+---
+
+# معايير الجودة
+
+* Production Ready
+* Scalable
+* Secure
+* Multi Tenant
+* Enterprise Grade
+* High Performance
+* Maintainable
+* Testable
+* Observable
+
+---
+
+# المطلوب في المخرجات
+
+لا تقدم أفكاراً أو شرحاً عاماً.
+
+أظهر فقط:
+
+* الملفات الجديدة.
+* الملفات المعدلة.
+* الكود المطلوب.
+* أوامر التثبيت.
+* أوامر Docker.
+* أوامر Migration.
+* الاختبارات.
+* خطوات الدمج داخل المشروع الحالي.
+
+إذا كانت الميزة موجودة بالفعل فلا تعيد تنفيذها، بل حسّنها فقط عند الحاجة.
+
+الهدف النهائي هو بناء منصة Document Intelligence عربية وعالمية قادرة على منافسة Google Document AI وAzure Document Intelligence مع تركيز خاص على OCR العربي، الأتمتة، RAG، البحث الدلالي، واستخراج البيانات الذكي للمؤسسات.
