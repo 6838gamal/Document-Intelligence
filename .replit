@@ -37,5 +37,4 @@ externalPort = 80
 [userenv]
 
 [userenv.shared]
-DOCIQ_DATABASE_URL = "postgresql://gamalalmaqtary:UlTLuzHBxBlD3hUTJdhdMOX3zEriLtND@dpg-d914h5e8bjmc739mvb00-a.virginia-postgres.render.com/masih_almustanadat_db"
 API_BASE_URL = "https://masih-almustanadat-api.onrender.com"
