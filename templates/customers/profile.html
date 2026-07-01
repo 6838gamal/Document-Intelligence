@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+{% block title %}{{ customer.name }} - {% if lang == 'ar' %}ملف العميل{% else %}Customer Profile{% endif %} - DocIQ{% endblock %}
+{% block content %}
+
+<!-- BREADCRUMB -->
+<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;">
+  <a href="/customers" style="color:var(--accent);text-decoration:none;">{% if lang=='ar'%}العملاء{% else %}Customers{% endif %}</a>
+  <i class="fa fa-chevron-{% if dir=='rtl'%}left{% else %}right{% endif %}" style="font-size:0.65rem;"></i>
+  <span>{{ customer.name }}</span>
+</div>
+
+<!-- CUSTOMER HEADER CARD -->
+<div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);color:white;border:none;">
+  <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+    <!-- Avatar -->
+    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#10B981,#3B82F6);display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:900;color:white;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+      {{ customer.name[0] }}
+    </div>
+
+    <!-- Name & Info -->
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+        <h1 style="font-size:1.4rem;font-weight:900;color:white;margin:0;">{{ customer.name }}</h1>
+        {% if customer.status == 'active' %}
+        <span style="padding:0.2rem 0.75rem;background:rgba(16,185,129,0.25);border:1px solid rgba(16,185,129,0.4);border-radius:20px;font-size:0.78rem;font-weight:700;color:#6EE7B7;">
+          <i class="fa fa-circle" style="font-size:0.45rem;margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.3rem;"></i>
+          {% if lang=='ar'%}نشط{% else %}Active{% endif %}
+        </span>
+        {% elif customer.status == 'on_hold' %}
+        <span style="padding:0.2rem 0.75rem;background:rgba(245,158,11,0.25);border:1px solid rgba(245,158,11,0.4);border-radius:20px;font-size:0.78rem;font-weight:700;color:#FCD34D;">
+          {% if lang=='ar'%}موقوف{% else %}On Hold{% endif %}
+        </span>
+        {% endif %}
+      </div>
+      <div style="color:rgba(255,255,255,0.7);font-size:0.875rem;">{{ customer.company or '—' }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-top:0.6rem;">
+        {% if customer.email %}
+        <span style="color:rgba(255,255,255,0.65);font-size:0.82rem;"><i class="fa fa-envelope" style="margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.35rem;"></i>{{ customer.email }}</span>
+        {% endif %}
+        {% if customer.phone %}
+        <span style="color:rgba(255,255,255,0.65);font-size:0.82rem;"><i class="fa fa-phone" style="margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.35rem;"></i>{{ customer.phone }}</span>
+        {% endif %}
+        {% if customer.country %}
+        <span style="color:rgba(255,255,255,0.65);font-size:0.82rem;"><i class="fa fa-location-dot" style="margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.35rem;"></i>{{ customer.country }}</span>
+        {% endif %}
+        {% if customer.sector %}
+        <span style="padding:0.15rem 0.6rem;background:rgba(59,130,246,0.25);border:1px solid rgba(59,130,246,0.35);border-radius:20px;font-size:0.78rem;color:#93C5FD;font-weight:600;">{{ customer.sector }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:0.6rem;flex-shrink:0;">
+      <a href="/documents/upload" class="btn-primary" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);backdrop-filter:blur(8px);">
+        <i class="fa fa-cloud-arrow-up"></i>
+        {% if lang=='ar'%}رفع مستند{% else %}Upload Doc{% endif %}
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- KPI ROW -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.25rem;">
+  {% for icon, color, val, label_ar, label_en in [
+    ('file-lines','#3B82F6', total_docs, 'إجمالي المستندات','Total Documents'),
+    ('robot','#10B981', processed_docs, 'مُعالَج بـ AI','AI Processed'),
+    ('triangle-exclamation','#EF4444', high_risk_docs, 'مخاطر عالية','High Risk Docs'),
+    ('money-bill-wave','#8B5CF6', '{:,.0f}'.format(customer.contract_value or 0) + ' ريال', 'قيمة العقود','Contract Value'),
+  ] %}
+  <div class="kpi-card" style="border-top:3px solid {{ color }};">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+      <span style="font-size:0.78rem;font-weight:700;color:var(--text-muted);">{% if lang=='ar'%}{{ label_ar }}{% else %}{{ label_en }}{% endif %}</span>
+      <div style="width:32px;height:32px;background:{{ color }}18;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa fa-{{ icon }}" style="font-size:0.85rem;color:{{ color }};"></i>
+      </div>
+    </div>
+    <div style="font-size:1.6rem;font-weight:900;color:{{ color }};">{{ val }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- MAIN GRID -->
+<div style="display:grid;grid-template-columns:1fr 340px;gap:1.25rem;"
+     x-data="{
+       activeTab: 'docs',
+       chatMessages: [],
+       question: '',
+       loading: false,
+       insightsText: '',
+       insightsLoading: false,
+       insightsDone: false,
+       async loadInsights() {
+         if(this.insightsDone) return;
+         this.insightsLoading = true;
+         try {
+           const r = await fetch('/customers/{{ customer.id }}/ai-insights', { method: 'POST' });
+           const d = await r.json();
+           this.insightsText = d.insights || d.error || 'خطأ';
+           this.insightsDone = true;
+         } catch(e) { this.insightsText = 'حدث خطأ في الاتصال'; }
+         this.insightsLoading = false;
+       },
+       async sendQuestion() {
+         if(!this.question.trim() || this.loading) return;
+         const q = this.question;
+         this.chatMessages.push({ role:'user', text:q });
+         this.question = '';
+         this.loading = true;
+         try {
+           const r = await fetch('/customers/{{ customer.id }}/chat', {
+             method:'POST', headers:{'Content-Type':'application/json'},
+             body: JSON.stringify({ question: q })
+           });
+           const d = await r.json();
+           this.chatMessages.push({ role:'ai', text: d.answer || d.error || 'خطأ' });
+         } catch(e) {
+           this.chatMessages.push({ role:'ai', text:'حدث خطأ في الاتصال' });
+         }
+         this.loading = false;
+         this.$nextTick(() => {
+           const el = document.getElementById('custChatBox');
+           if(el) el.scrollTop = el.scrollHeight;
+         });
+       }
+     }">
+
+  <!-- LEFT: TABS -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+    <!-- TAB BAR -->
+    <div class="card" style="padding:0.6rem;display:flex;gap:0.35rem;">
+      {% for tab_id, icon, label_ar, label_en in [
+        ('docs','file-lines','المستندات','Documents'),
+        ('insights','brain','رؤى AI','AI Insights'),
+        ('chat','comments','دردشة','Chat'),
+        ('details','user','التفاصيل','Details'),
+      ] %}
+      <button
+        @click="activeTab='{{ tab_id }}'; {% if tab_id == 'insights' %}loadInsights(){% endif %}"
+        :style="activeTab==='{{ tab_id }}' ? 'background:var(--accent);color:white;' : 'background:transparent;color:var(--text-muted);'"
+        style="flex:1;padding:0.5rem 0.5rem;border:none;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:0.35rem;transition:0.2s;">
+        <i class="fa fa-{{ icon }}" style="font-size:0.78rem;"></i>
+        {% if lang=='ar'%}{{ label_ar }}{% else %}{{ label_en }}{% endif %}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- TAB: DOCUMENTS -->
+    <div x-show="activeTab==='docs'" x-transition>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="font-weight:700;font-size:0.95rem;">
+            <i class="fa fa-file-lines" style="color:var(--accent);margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.4rem;"></i>
+            {% if lang=='ar'%}مستندات العميل{% else %}Customer Documents{% endif %}
+            <span style="background:rgba(59,130,246,0.12);color:var(--accent);padding:0.15rem 0.55rem;border-radius:20px;font-size:0.75rem;margin-{% if dir=='rtl'%}right{% else %}left{% endif %}:0.4rem;">{{ total_docs }}</span>
+          </h3>
+          <a href="/documents/upload" class="btn-primary" style="font-size:0.8rem;padding:0.35rem 0.75rem;">
+            <i class="fa fa-plus"></i> {% if lang=='ar'%}رفع{% else %}Upload{% endif %}
+          </a>
+        </div>
+
+        {% if docs %}
+        <table>
+          <thead><tr>
+            <th>{% if lang=='ar'%}المستند{% else %}Document{% endif %}</th>
+            <th>{% if lang=='ar'%}النوع{% else %}Type{% endif %}</th>
+            <th>{% if lang=='ar'%}الحالة{% else %}Status{% endif %}</th>
+            <th>{% if lang=='ar'%}المخاطر{% else %}Risk{% endif %}</th>
+            <th>{% if lang=='ar'%}الثقة{% else %}Conf.{% endif %}</th>
+            <th></th>
+          </tr></thead>
+          <tbody>
+          {% for doc in docs %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.6rem;">
+                <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+                  {% if doc.file_type == 'PDF' %}background:rgba(239,68,68,0.1);{% elif doc.file_type in ['PNG','JPG','JPEG','WEBP'] %}background:rgba(139,92,246,0.1);{% elif doc.file_type == 'DOCX' %}background:rgba(59,130,246,0.1);{% else %}background:rgba(107,114,128,0.1);{% endif %}">
+                  <i class="fa {% if doc.file_type == 'PDF' %}fa-file-pdf{% elif doc.file_type in ['PNG','JPG','JPEG','WEBP'] %}fa-image{% elif doc.file_type == 'DOCX' %}fa-file-word{% elif doc.file_type == 'XLSX' %}fa-file-excel{% else %}fa-file-lines{% endif %}"
+                     style="font-size:0.8rem;{% if doc.file_type == 'PDF' %}color:#EF4444{% elif doc.file_type in ['PNG','JPG','JPEG','WEBP'] %}color:#8B5CF6{% elif doc.file_type == 'DOCX' %}color:#3B82F6{% else %}color:#6B7280{% endif %}"></i>
+                </div>
+                <div>
+                  <div style="font-weight:600;font-size:0.85rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ doc.title }}</div>
+                  <div style="font-size:0.72rem;color:var(--text-muted);">{{ doc.created_at.strftime('%Y/%m/%d') if doc.created_at else '—' }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="font-size:0.82rem;">{{ doc.document_type or doc.category or '—' }}</td>
+            <td>
+              {% if doc.status == 'reviewed' %}<span class="badge badge-success">{% if lang=='ar'%}مراجَع{% else %}Reviewed{% endif %}</span>
+              {% elif doc.status == 'processing' %}<span class="badge badge-warning">{% if lang=='ar'%}يعالَج{% else %}Processing{% endif %}</span>
+              {% elif doc.status == 'approved' %}<span class="badge badge-success">{% if lang=='ar'%}معتمد{% else %}Approved{% endif %}</span>
+              {% elif doc.status == 'pending_approval' %}<span class="badge badge-info">{% if lang=='ar'%}بانتظار{% else %}Pending{% endif %}</span>
+              {% elif doc.status == 'rejected' %}<span class="badge badge-danger">{% if lang=='ar'%}مرفوض{% else %}Rejected{% endif %}</span>
+              {% else %}<span class="badge badge-gray">{{ doc.status }}</span>{% endif %}
+            </td>
+            <td>
+              {% if doc.fraud_risk == 'high' %}<span style="color:#EF4444;font-weight:700;font-size:0.8rem;">⚠️ {% if lang=='ar'%}عالٍ{% else %}High{% endif %}</span>
+              {% elif doc.fraud_risk == 'medium' %}<span style="color:#F59E0B;font-weight:700;font-size:0.8rem;">🟡 {% if lang=='ar'%}متوسط{% else %}Med{% endif %}</span>
+              {% elif doc.fraud_risk == 'low' %}<span style="color:#10B981;font-weight:700;font-size:0.8rem;">✅ {% if lang=='ar'%}منخفض{% else %}Low{% endif %}</span>
+              {% else %}<span style="color:var(--text-muted);font-size:0.8rem;">—</span>{% endif %}
+            </td>
+            <td>
+              {% if doc.confidence_score %}
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <div style="width:50px;height:5px;background:var(--border);border-radius:20px;overflow:hidden;">
+                  <div style="height:100%;width:{{ doc.confidence_score }}%;background:{% if doc.confidence_score >= 80 %}#10B981{% elif doc.confidence_score >= 50 %}#F59E0B{% else %}#EF4444{% endif %};border-radius:20px;"></div>
+                </div>
+                <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">{{ doc.confidence_score|int }}%</span>
+              </div>
+              {% else %}<span style="color:var(--text-muted);font-size:0.8rem;">—</span>{% endif %}
+            </td>
+            <td>
+              <a href="/documents/{{ doc.id }}/review" class="btn-secondary" style="padding:0.25rem 0.55rem;font-size:0.75rem;">
+                <i class="fa fa-robot"></i> AI
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div style="padding:3rem;text-align:center;color:var(--text-muted);">
+          <i class="fa fa-folder-open" style="font-size:2.5rem;opacity:0.2;display:block;margin-bottom:0.75rem;"></i>
+          <p style="font-size:0.875rem;">{% if lang=='ar'%}لا توجد مستندات مرتبطة بهذا العميل{% else %}No documents linked to this customer{% endif %}</p>
+          <a href="/documents/upload" class="btn-primary" style="margin-top:0.75rem;font-size:0.85rem;">
+            <i class="fa fa-cloud-arrow-up"></i> {% if lang=='ar'%}رفع مستند{% else %}Upload Document{% endif %}
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- TAB: AI INSIGHTS -->
+    <div x-show="activeTab==='insights'" x-transition>
+      <div class="card" style="background:linear-gradient(135deg,rgba(59,130,246,0.04) 0%,transparent 100%);border-color:rgba(59,130,246,0.15);">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+          <div style="width:40px;height:40px;background:rgba(59,130,246,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i class="fa fa-brain" style="color:var(--accent);font-size:1.1rem;"></i>
+          </div>
+          <div>
+            <h3 style="font-weight:700;margin-bottom:0.15rem;">{% if lang=='ar'%}رؤى Gemini AI{% else %}Gemini AI Insights{% endif %}</h3>
+            <p style="font-size:0.78rem;color:var(--text-muted);">{% if lang=='ar'%}تحليل شامل لمستندات العميل{% else %}Comprehensive analysis of customer documents{% endif %}</p>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div x-show="insightsLoading" style="padding:2rem;text-align:center;">
+          <div style="width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem;"></div>
+          <p style="color:var(--text-muted);font-size:0.875rem;">{% if lang=='ar'%}يحلل Gemini المستندات...{% else %}Gemini is analyzing documents...{% endif %}</p>
+        </div>
+
+        <!-- Empty state -->
+        <div x-show="!insightsLoading && !insightsDone" style="padding:2rem;text-align:center;">
+          <i class="fa fa-sparkles" style="font-size:2.5rem;color:var(--accent);opacity:0.4;display:block;margin-bottom:0.75rem;"></i>
+          <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:1rem;">{% if lang=='ar'%}اضغط الزر لتوليد رؤى AI لهذا العميل{% else %}Click the button to generate AI insights{% endif %}</p>
+          <button @click="loadInsights()" class="btn-primary">
+            <i class="fa fa-wand-magic-sparkles"></i>
+            {% if lang=='ar'%}توليد الرؤى{% else %}Generate Insights{% endif %}
+          </button>
+        </div>
+
+        <!-- Results -->
+        <div x-show="insightsDone && !insightsLoading" x-transition>
+          <div style="padding:1.25rem;background:var(--bg);border-radius:10px;line-height:1.9;font-size:0.875rem;white-space:pre-wrap;" x-text="insightsText"></div>
+          <div style="margin-top:0.75rem;display:flex;justify-content:flex-end;">
+            <button @click="insightsDone=false;insightsText='';loadInsights()" class="btn-secondary" style="font-size:0.8rem;">
+              <i class="fa fa-rotate"></i> {% if lang=='ar'%}تحديث{% else %}Refresh{% endif %}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CHAT -->
+    <div x-show="activeTab==='chat'" x-transition>
+      <div class="card" style="display:flex;flex-direction:column;gap:0.75rem;">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.25rem;">
+          <i class="fa fa-comments" style="color:var(--accent);"></i>
+          <h3 style="font-weight:700;font-size:0.95rem;">{% if lang=='ar'%}دردشة مع مستندات العميل{% else %}Chat with Customer Docs{% endif %}</h3>
+        </div>
+
+        <!-- Chat box -->
+        <div id="custChatBox" style="min-height:220px;max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:0.5rem;padding:0.75rem;background:var(--bg);border-radius:10px;">
+          <template x-if="chatMessages.length === 0">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:var(--text-muted);">
+              <i class="fa fa-robot" style="font-size:2rem;opacity:0.2;margin-bottom:0.5rem;"></i>
+              <p style="font-size:0.8rem;">{% if lang=='ar'%}اسأل أي سؤال عن مستندات {{ customer.name }}{% else %}Ask anything about {{ customer.name }}'s documents{% endif %}</p>
+            </div>
+          </template>
+          <template x-for="msg in chatMessages" :key="msg.text">
+            <div :style="msg.role==='user' ? 'align-self:flex-end;background:var(--accent);color:white;' : 'align-self:flex-start;background:var(--card);border:1px solid var(--border);'"
+                 style="padding:0.6rem 0.9rem;border-radius:12px;max-width:92%;font-size:0.85rem;line-height:1.5;">
+              <template x-if="msg.role==='ai'">
+                <span style="font-size:0.7rem;color:var(--text-muted);display:block;margin-bottom:0.2rem;font-weight:700;">
+                  <i class="fa fa-robot"></i> Gemini AI
+                </span>
+              </template>
+              <span x-text="msg.text" style="white-space:pre-wrap;"></span>
+            </div>
+          </template>
+          <template x-if="loading">
+            <div style="align-self:flex-start;padding:0.6rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:12px;font-size:0.85rem;color:var(--text-muted);">
+              <i class="fa fa-spinner fa-spin"></i> {% if lang=='ar'%}يفكر...{% else %}Thinking...{% endif %}
+            </div>
+          </template>
+        </div>
+
+        <!-- Quick questions -->
+        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+          {% for q_ar, q_en in [
+            ('ما أبرز الالتزامات التعاقدية؟','What are the key contractual obligations?'),
+            ('هل هناك أي مخاطر في العقود؟','Are there any contract risks?'),
+            ('ما قيم العقود المذكورة؟','What contract values are mentioned?'),
+            ('ما التواريخ والمواعيد النهائية؟','What are the dates and deadlines?'),
+          ] %}
+          <button @click="question='{% if lang==\"ar\" %}{{ q_ar }}{% else %}{{ q_en }}{% endif %}'; sendQuestion()"
+                  style="padding:0.25rem 0.65rem;font-size:0.72rem;background:var(--bg);border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--text-muted);transition:0.15s;"
+                  onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                  onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'"
+                  :disabled="loading">
+            {% if lang=='ar'%}{{ q_ar }}{% else %}{{ q_en }}{% endif %}
+          </button>
+          {% endfor %}
+        </div>
+
+        <!-- Input -->
+        <div style="display:flex;gap:0.5rem;">
+          <input type="text" x-model="question" @keydown.enter="sendQuestion()"
+                 placeholder="{% if lang=='ar'%}اسأل عن مستندات {{ customer.name }}...{% else %}Ask about {{ customer.name }}'s documents...{% endif %}"
+                 style="flex:1;" :disabled="loading" />
+          <button @click="sendQuestion()" class="btn-primary" :disabled="loading || !question.trim()" style="padding:0.5rem 0.9rem;">
+            <i class="fa fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DETAILS -->
+    <div x-show="activeTab==='details'" x-transition>
+      <div class="card">
+        <h3 style="font-weight:700;margin-bottom:1.25rem;">{% if lang=='ar'%}بيانات التواصل{% else %}Contact Details{% endif %}</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          {% for label_ar, label_en, val, icon in [
+            ('الاسم الكامل','Full Name', customer.name, 'user'),
+            ('الشركة','Company', customer.company or '—', 'building'),
+            ('البريد الإلكتروني','Email', customer.email or '—', 'envelope'),
+            ('الهاتف','Phone', customer.phone or '—', 'phone'),
+            ('الدولة','Country', customer.country or '—', 'location-dot'),
+            ('القطاع','Sector', customer.sector or '—', 'industry'),
+            ('قيمة العقود','Contract Value', '{:,.0f} ريال'.format(customer.contract_value or 0), 'money-bill-wave'),
+            ('الحالة','Status', customer.status or '—', 'circle-check'),
+          ] %}
+          <div style="padding:0.875rem;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.3rem;">
+              <i class="fa fa-{{ icon }}" style="margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.3rem;"></i>
+              {% if lang=='ar'%}{{ label_ar }}{% else %}{{ label_en }}{% endif %}
+            </div>
+            <div style="font-weight:700;font-size:0.875rem;">{{ val }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div><!-- END LEFT -->
+
+  <!-- RIGHT PANEL -->
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+
+    <!-- Document types breakdown -->
+    {% if doc_types %}
+    <div class="card">
+      <h3 style="font-weight:700;font-size:0.9rem;margin-bottom:1rem;">
+        <i class="fa fa-tags" style="color:var(--accent);margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.4rem;"></i>
+        {% if lang=='ar'%}تصنيف المستندات{% else %}Document Types{% endif %}
+      </h3>
+      <div style="display:flex;flex-direction:column;gap:0.6rem;">
+        {% for dtype, count in doc_types.items() %}
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.25rem;">
+            <span style="font-size:0.8rem;font-weight:600;">{{ dtype }}</span>
+            <span style="font-size:0.8rem;color:var(--text-muted);">{{ count }}</span>
+          </div>
+          <div style="background:var(--border);border-radius:20px;height:5px;overflow:hidden;">
+            <div style="height:100%;width:{{ (count / total_docs * 100)|int if total_docs else 0 }}%;background:var(--accent);border-radius:20px;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Risk summary -->
+    <div class="card">
+      <h3 style="font-weight:700;font-size:0.9rem;margin-bottom:1rem;">
+        <i class="fa fa-shield-halved" style="color:var(--accent);margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.4rem;"></i>
+        {% if lang=='ar'%}ملخص المخاطر{% else %}Risk Summary{% endif %}
+      </h3>
+      {% set low_risk = docs | selectattr('fraud_risk','eq','low') | list | length %}
+      {% set med_risk = docs | selectattr('fraud_risk','eq','medium') | list | length %}
+      {% set high_risk = docs | selectattr('fraud_risk','eq','high') | list | length %}
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        {% for label_ar, label_en, count, color, icon in [
+          ('خطر منخفض','Low Risk', low_risk, '#10B981','circle-check'),
+          ('خطر متوسط','Medium Risk', med_risk, '#F59E0B','triangle-exclamation'),
+          ('خطر عالٍ','High Risk', high_risk, '#EF4444','triangle-exclamation'),
+        ] %}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.875rem;background:{{ color }}08;border:1px solid {{ color }}20;border-radius:8px;">
+          <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;font-weight:600;color:{{ color }};">
+            <i class="fa fa-{{ icon }}" style="font-size:0.75rem;"></i>
+            {% if lang=='ar'%}{{ label_ar }}{% else %}{{ label_en }}{% endif %}
+          </div>
+          <span style="font-weight:900;font-size:1rem;color:{{ color }};">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="card">
+      <h3 style="font-weight:700;font-size:0.9rem;margin-bottom:0.875rem;">
+        <i class="fa fa-bolt" style="color:var(--accent);margin-{% if dir=='rtl'%}left{% else %}right{% endif %}:0.4rem;"></i>
+        {% if lang=='ar'%}روابط سريعة{% else %}Quick Links{% endif %}
+      </h3>
+      <div style="display:flex;flex-direction:column;gap:0.4rem;">
+        <a href="/documents?search={{ customer.name }}" style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.875rem;border-radius:8px;color:var(--text);text-decoration:none;border:1px solid var(--border);font-size:0.85rem;font-weight:600;transition:0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+          <i class="fa fa-magnifying-glass" style="width:16px;text-align:center;"></i>
+          {% if lang=='ar'%}بحث في المستندات{% else %}Search Documents{% endif %}
+        </a>
+        <a href="/documents/bulk-upload" style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.875rem;border-radius:8px;color:var(--text);text-decoration:none;border:1px solid var(--border);font-size:0.85rem;font-weight:600;transition:0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+          <i class="fa fa-layer-group" style="width:16px;text-align:center;"></i>
+          {% if lang=='ar'%}رفع جماعي{% else %}Bulk Upload{% endif %}
+        </a>
+        <a href="/reports" style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.875rem;border-radius:8px;color:var(--text);text-decoration:none;border:1px solid var(--border);font-size:0.85rem;font-weight:600;transition:0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+          <i class="fa fa-chart-bar" style="width:16px;text-align:center;"></i>
+          {% if lang=='ar'%}التقارير{% else %}Reports{% endif %}
+        </a>
+      </div>
+    </div>
+
+  </div><!-- END RIGHT -->
+</div><!-- END MAIN GRID -->
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 900px) {
+  [style*="grid-template-columns:1fr 340px"] { grid-template-columns: 1fr !important; }
+  [style*="grid-template-columns:repeat(4,1fr)"] { grid-template-columns: repeat(2,1fr) !important; }
+}
+</style>
+{% endblock %}
